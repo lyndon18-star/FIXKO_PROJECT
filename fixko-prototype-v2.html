@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fixko — Facility Reporting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#4F46E5;
+    --primary-dark:#4338CA;
+    --primary-light:#EEF2FF;
+    --bg:#F4F7FB;
+    --card:#FFFFFF;
+    --border:#E5E8EF;
+    --text:#0F172A;
+    --text-soft:#475569;
+    --muted:#8891A5;
+    --success:#15A36B; --success-bg:#E7F7EF;
+    --warning:#DB8B1F; --warning-bg:#FDF1DD;
+    --info:#3B7CF6; --info-bg:#EAF1FE;
+    --danger:#E5484D; --danger-bg:#FCE9E9;
+    --pending:#8891A5; --pending-bg:#EEF0F4;
+    --field:#0F9F83;
+    --teal:#0E8F9C;
+    --coral:#E76F51;
+    --sky:#3B82F6;
+    --sun:#F2B134;
+    --shadow-sm:0 1px 2px rgba(15,23,42,.06);
+    --shadow-md:0 4px 16px rgba(15,23,42,.08);
+    --radius:12px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;width:100%;overflow-x:hidden;}
+  body{
+    margin:0;font-family:'Inter',sans-serif;background-color:var(--bg);color:var(--text);
+    background-image:linear-gradient(rgba(79,70,229,.035) 1px, transparent 1px),linear-gradient(90deg, rgba(14,143,156,.035) 1px, transparent 1px),linear-gradient(135deg, rgba(255,255,255,.82), rgba(244,247,251,.96));
+    background-size:32px 32px,32px 32px,100% 100%;
+    -webkit-font-smoothing:antialiased;width:100%;min-height:100vh;overflow-x:hidden;
+  }
+  h1,h2,h3,.display{font-family:'Inter Tight',sans-serif;font-weight:800;letter-spacing:-0.02em;margin:0;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:2px solid var(--primary);outline-offset:2px;}
+  .hidden{display:none !important;}
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:#D6DAE3;border-radius:6px;}
+
+  .container{max-width:100%;margin:0 auto;padding:0 48px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;padding:11px 20px;font-size:14px;font-weight:600;
+    border:1px solid var(--primary);background:var(--primary);color:#fff;border-radius:9px;transition:.15s;
+  }
+  .btn:hover{background:var(--primary-dark);border-color:var(--primary-dark);}
+  .btn.ghost{background:transparent;color:var(--text);border-color:var(--border);}
+  .btn.ghost:hover{background:var(--bg);}
+  .btn.field{background:var(--field);border-color:var(--field);}
+  .btn.field:hover{filter:brightness(.92);}
+  .btn.sm{padding:8px 14px;font-size:13px;}
+
+  /* ============ TOP NAVBAR (shared) ============ */
+  .navbar{
+    position:sticky;top:0;z-index:60;background:rgba(255,255,255,.94);border-bottom:1px solid var(--border);backdrop-filter:blur(14px);
+  }
+  .navbar-inner{
+    max-width:100%;margin:0 auto;padding:0 32px;height:66px;
+    display:flex;align-items:center;gap:18px;
+  }
+  .brand{display:flex;align-items:center;gap:9px;flex-shrink:0;}
+  .brand-mark{
+    width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--primary),#7C6FF0);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Inter Tight';font-weight:800;font-size:14px;
+  }
+  .brand-name{font-family:'Inter Tight';font-weight:800;font-size:18px;}
+  .nav-links{display:flex;gap:2px;flex:1;}
+  .nav-link{
+    padding:9px 14px;font-size:14px;font-weight:600;color:var(--muted);border-radius:8px;border:none;background:none;
+    display:flex;align-items:center;gap:7px;
+  }
+  .nav-link:hover{color:var(--text);background:var(--bg);}
+  .nav-link.active{color:var(--primary);background:var(--primary-light);}
+  .nav-right{display:flex;align-items:center;gap:14px;flex-shrink:0;}
+  .role-pills-top{display:flex;gap:8px;}
+  .pill{
+    padding:9px 16px;border:1px solid var(--border);background:transparent;
+    font-size:13.5px;font-weight:600;color:var(--text);border-radius:9px;
+  }
+  .pill:hover{border-color:var(--primary);color:var(--primary);}
+  .bell{position:relative;font-size:17px;background:none;border:none;padding:8px;border-radius:8px;color:var(--text-soft);}
+  .bell:hover{background:var(--bg);}
+  .bell .dot{position:absolute;top:6px;right:7px;width:7px;height:7px;background:var(--danger);border-radius:50%;border:2px solid #fff;}
+  .avatar{
+    width:34px;height:34px;border-radius:50%;background:var(--primary);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;
+  }
+  .user-menu{display:flex;align-items:center;gap:9px;}
+  .user-name-sm{font-size:13px;font-weight:600;}
+  .user-role-sm{font-size:11px;color:var(--muted);}
+  .signout-sm{background:none;border:none;color:var(--muted);font-size:15px;padding:6px;border-radius:6px;}
+  .signout-sm:hover{background:var(--bg);color:var(--danger);}
+
+  /* ============ LANDING ============ */
+  .hero{
+    display:grid;grid-template-columns:minmax(0,1fr) minmax(420px,.95fr);gap:clamp(24px,3vw,40px);align-items:center;
+    padding:72px 40px 64px;max-width:1700px;margin:0 auto;perspective:1400px;isolation:isolate;overflow:hidden;
+  }
+  .hero-badge{
+    display:inline-flex;align-items:center;gap:7px;padding:6px 13px;background:var(--primary-light);
+    color:var(--primary);border-radius:99px;font-size:12.5px;font-weight:700;margin-bottom:20px;
+  }
+  .hero h1{font-size:clamp(46px,4.3vw,64px);line-height:1.03;margin-bottom:21px;color:var(--text);}
+  .hero h1 .u{color:var(--primary);}
+    .hero h1 .u{background:linear-gradient(100deg,var(--primary),var(--sky),var(--teal),var(--coral),var(--primary));background-size:240% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:colorSweep 7s ease-in-out infinite;}
+  .hero p{font-size:17.5px;line-height:1.65;color:var(--text-soft);max-width:48ch;margin-bottom:33px;}
+  .hero-actions{display:flex;gap:12px;}
+  .hero > div:nth-child(2){justify-self:start;width:100%;max-width:700px;}
+  .hero-copy{grid-column:1;grid-row:1;animation:heroRise .8s cubic-bezier(.2,.8,.2,1) both;}
+    .hero-copy > *{animation:copyReveal .7s cubic-bezier(.2,.8,.2,1) both;}
+    .hero-copy > *:nth-child(1){animation-delay:.08s;}
+    .hero-copy > *:nth-child(2){animation-delay:.16s;}
+    .hero-copy > *:nth-child(3){animation-delay:.24s;}
+    .hero-copy > *:nth-child(4){animation-delay:.32s;}
+  .stat-card{padding:26px;}
+  .stat-title{font-size:12.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:18px;}
+  .stat-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--border);}
+  .stat-row:last-child{border-bottom:none;}
+  .stat-label{font-size:14px;color:var(--text-soft);font-weight:500;}
+  .stat-num{font-family:'Inter Tight';font-weight:800;font-size:26px;}
+  .stat-num.amber{color:var(--warning);} .stat-num.rust{color:var(--danger);} .stat-num.field{color:var(--field);}
+
+  .howit{max-width:100%;margin:0 auto;padding:10px 48px 90px;}
+  .howit-head{text-align:center;margin-bottom:36px;}
+  .howit-head h2{font-size:28px;}
+  .howit-head p{color:var(--text-soft);margin-top:8px;font-size:15px;}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+  .step-card{padding:26px;}
+  .step-icon{
+    width:42px;height:42px;border-radius:10px;background:var(--primary-light);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;font-size:19px;margin-bottom:16px;
+  }
+  .step-card h3{font-size:17px;margin-bottom:8px;}
+  .step-card p{font-size:13.5px;color:var(--text-soft);line-height:1.6;margin:0;}
+
+  /* ---- landing nav extras ---- */
+  .landing-links{display:flex;gap:4px;flex:0 1 auto;margin-right:auto;}
+  .landing-links a{padding:9px 14px;font-size:14px;font-weight:600;color:var(--text-soft);border-radius:8px;animation:navReveal .55s cubic-bezier(.2,.8,.2,1) both;}
+  .landing-links a:nth-child(1){animation-delay:.08s;}
+  .landing-links a:nth-child(2){animation-delay:.14s;}
+  .landing-links a:nth-child(3){animation-delay:.2s;}
+  .landing-links a:nth-child(4){animation-delay:.26s;}
+  .landing-links a:nth-child(5){animation-delay:.32s;}
+  .landing-links a:nth-child(6){animation-delay:.38s;}
+  .landing-links a:hover{background:var(--bg);color:var(--text);}
+  #view-landing .navbar-inner{max-width:1700px;display:grid;grid-template-columns:1fr auto 1fr;}
+  #view-landing .landing-links{justify-self:center;margin-right:0;}
+  #view-landing .role-pills-top{justify-self:end;}
+
+  /* ---- scroll reveal ---- */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease;}
+  .reveal.in{opacity:1;transform:translateY(0);}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none;}.hero-copy,.hero .stat-card{animation:none;}}
+
+  /* ---- hero polish ---- */
+  .hero{position:relative;}
+  .hero-blob{
+    position:absolute;top:-120px;right:-160px;width:520px;height:520px;border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, #E3E0FC, transparent 68%);z-index:0;pointer-events:none;
+  }
+  .hero > *:not(.hero-blob){position:relative;z-index:1;}
+    .hero > *:not(.hero-blob):not(.hero-scene){position:relative;z-index:1;}
+    .hero-scene{position:absolute;inset:0;z-index:0;pointer-events:none;transform-style:preserve-3d;overflow:hidden;}
+    .hero-scene::before{content:"";position:absolute;top:-18%;right:-8%;width:62%;height:125%;background:linear-gradient(135deg,rgba(79,70,229,.16),rgba(59,130,246,.09) 42%,rgba(231,111,81,.12));clip-path:polygon(18% 0,100% 0,100% 100%,0 82%);transform:rotateY(-14deg) rotateX(8deg) translateZ(-24px);animation:sceneDrift 10s ease-in-out infinite alternate;}
+    .hero-scene::after{content:"";position:absolute;inset:8% -4% 10% 48%;background-image:linear-gradient(rgba(14,143,156,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(242,177,52,.12) 1px,transparent 1px);background-size:28px 28px;transform:perspective(800px) rotateX(58deg) rotateZ(-7deg) translateZ(-50px);transform-origin:center bottom;opacity:.62;animation:gridFloat 9s ease-in-out infinite alternate;}
+  .stat-card{padding:26px;position:relative;overflow:hidden;}
+  .hero .stat-card{grid-column:2;grid-row:1;transform-style:preserve-3d;will-change:transform;animation:cardFloat 5s ease-in-out .45s infinite;transition:box-shadow .3s ease;}
+  .hero .stat-card:hover{box-shadow:0 18px 38px rgba(15,23,42,.14);}
+  .stat-card .stat-caption{font-size:11px;color:var(--muted);margin-top:14px;text-align:center;}
+  @keyframes pulseDot{0%,100%{opacity:1;}50%{opacity:.35;}}
+  @keyframes heroRise{from{opacity:0;transform:translateY(22px) rotateX(3deg);}to{opacity:1;transform:translateY(0) rotateX(0);}}
+  @keyframes copyReveal{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes navReveal{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes colorSweep{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+  @keyframes sceneDrift{from{transform:rotateY(-14deg) rotateX(8deg) translate3d(0,0,-24px);}to{transform:rotateY(-9deg) rotateX(4deg) translate3d(-18px,10px,-24px);}}
+  @keyframes gridFloat{from{transform:perspective(800px) rotateX(58deg) rotateZ(-7deg) translate3d(0,0,-50px);}to{transform:perspective(800px) rotateX(55deg) rotateZ(-5deg) translate3d(18px,-12px,-50px);}}
+    @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none;}.hero-copy,.hero-copy > *,.hero .stat-card,.hero h1 .u,.hero-scene::before,.hero-scene::after,.landing-links a{animation:none;}}
+  @keyframes cardFloat{0%,100%{transform:translateY(0) rotateX(0) rotateY(0);}50%{transform:translateY(-9px) rotateX(.5deg) rotateY(-.5deg);}}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--success);display:inline-block;animation:pulseDot 1.8s infinite;margin-right:6px;}
+
+  /* ---- trust / marquee strip ---- */
+  .trust-strip{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:#fff;padding:20px 0;}
+  .trust-strip .container{display:flex;align-items:center;gap:34px;justify-content:center;flex-wrap:wrap;}
+  .trust-item{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-soft);}
+  .trust-item .ic{color:var(--primary);}
+  .trust-item:nth-child(2) .ic{color:var(--teal);}
+  .trust-item:nth-child(3) .ic{color:var(--warning);}
+  .trust-item:nth-child(4) .ic{color:var(--coral);}
+
+  /* ---- campus pulse ---- */
+  .pulse-section{max-width:1440px;margin:0 auto;padding:64px 32px 24px;}
+  .pulse-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:22px;}
+  .pulse-head h2{font-size:25px;line-height:1.15;}
+  .pulse-head p{color:var(--text-soft);font-size:14px;margin:8px 0 0;}
+  .pulse-link{border:0;background:none;color:var(--primary);font-size:13px;font-weight:700;padding:8px 0;white-space:nowrap;}
+  .pulse-link:hover{text-decoration:underline;}
+  .pulse-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .pulse-card{padding:22px;transition:transform .2s,box-shadow .2s;}
+  .pulse-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);}
+  .pulse-card-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
+  .pulse-label{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+  .pulse-value{font-family:'Inter Tight';font-size:30px;font-weight:800;}
+  .pulse-status{font-size:12px;font-weight:700;color:var(--success);background:var(--success-bg);padding:5px 9px;border-radius:99px;}
+  .pulse-card p{font-size:13px;color:var(--text-soft);line-height:1.5;margin:0 0 14px;}
+  .pulse-track{height:7px;background:var(--pending-bg);border-radius:99px;overflow:hidden;}
+  .pulse-fill{height:100%;border-radius:inherit;background:var(--primary);}
+  .pulse-fill.field{background:var(--field);}
+  .pulse-fill.warning{background:var(--warning);}
+
+  /* ---- section shell ---- */
+  .section{max-width:100%;margin:0 auto;padding:88px 48px;}
+  .section.tight{padding-top:0;}
+  .section-head{text-align:center;max-width:640px;margin:0 auto 44px;}
+  .section-eyebrow{display:inline-block;font-size:12.5px;font-weight:700;color:var(--primary);background:var(--primary-light);padding:5px 12px;border-radius:99px;margin-bottom:14px;}
+  .section-head h2{font-size:30px;line-height:1.15;}
+  .section-head p{color:var(--text-soft);margin-top:10px;font-size:15.5px;line-height:1.6;}
+
+  /* ---- feature grid ---- */
+  .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .feature-card{padding:26px;transition:box-shadow .2s,transform .2s;}
+  .feature-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);}
+  .feature-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;margin-bottom:16px;}
+  .feature-card h3{font-size:16.5px;margin-bottom:8px;}
+  .feature-card p{font-size:13.5px;color:var(--text-soft);line-height:1.6;margin:0;}
+
+  /* ---- interactive guide / demo ---- */
+  .guide{display:grid;grid-template-columns:.85fr 1.15fr;gap:44px;align-items:center;}
+  .guide-tabs{display:flex;flex-direction:column;gap:4px;}
+  .guide-tab{
+    display:flex;gap:14px;padding:16px;border-radius:12px;border:1px solid transparent;text-align:left;background:none;
+  }
+  .guide-tab:hover{background:var(--bg);}
+  .guide-tab.active{background:#fff;border-color:var(--border);box-shadow:var(--shadow-sm);}
+  .guide-tab-num{
+    width:30px;height:30px;border-radius:9px;background:var(--pending-bg);color:var(--muted);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;
+  }
+  .guide-tab.active .guide-tab-num{background:var(--primary);color:#fff;}
+  .guide-tab-title{font-size:15px;font-weight:700;margin-bottom:3px;}
+  .guide-tab-sub{font-size:12.5px;color:var(--muted);line-height:1.5;}
+  .guide-progress-track{height:3px;background:var(--border);border-radius:3px;margin-top:8px;overflow:hidden;}
+  .guide-progress-fill{height:100%;width:0%;background:var(--primary);}
+  .guide-tab.active .guide-progress-fill{animation:guideFill 4.5s linear forwards;}
+  @keyframes guideFill{from{width:0%;}to{width:100%;}}
+
+  .demo-frame{
+    background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-md);
+    padding:20px;min-height:340px;position:relative;overflow:hidden;
+  }
+  .demo-panel{display:none;}
+  .demo-panel.active{display:block;animation:fadeInSlide .4s ease;}
+  @keyframes fadeInSlide{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+  .demo-mock-ticket{border:1px solid var(--border);border-radius:11px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .demo-mock-title{font-size:13.5px;font-weight:700;}
+  .demo-mock-meta{font-size:11.5px;color:var(--muted);margin-top:3px;}
+
+  /* ---- roles section ---- */
+  .roles-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .role-card{padding:28px;border-top:3px solid var(--primary);}
+  .role-card.faculty{border-top-color:var(--field);}
+  .role-card.admin{border-top-color:#0F172A;}
+  .role-card h3{font-size:18px;margin-bottom:6px;}
+  .role-card .role-tagline{font-size:13px;color:var(--muted);margin-bottom:16px;}
+  .role-card ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;}
+  .role-card li{font-size:13.5px;color:var(--text-soft);display:flex;gap:9px;align-items:flex-start;line-height:1.5;}
+  .role-card li .check{color:var(--success);font-weight:800;flex-shrink:0;}
+
+  /* ---- FAQ ---- */
+  .faq-list{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:10px;}
+  .faq-item{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  .faq-q{width:100%;text-align:left;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;background:none;border:none;font-size:14.5px;font-weight:700;}
+  .faq-icon{transition:transform .2s;color:var(--muted);font-size:18px;}
+  .faq-item.open .faq-icon{transform:rotate(45deg);}
+  .faq-a{max-height:0;overflow:hidden;transition:max-height .25s ease;}
+  .faq-item.open .faq-a{max-height:200px;}
+  .faq-a-inner{padding:0 20px 18px;font-size:13.5px;color:var(--text-soft);line-height:1.6;}
+
+  /* ---- final CTA ---- */
+  .cta-band{
+    max-width:100%;margin:0 auto 0;padding:0 48px 90px;
+  }
+  .cta-inner{
+    background:linear-gradient(135deg,#111827,#312E81);color:#fff;border-radius:20px;
+    padding:56px;text-align:center;position:relative;overflow:hidden;
+  }
+  .cta-inner::before{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(circle at 80% 0%, rgba(124,111,240,.35), transparent 55%);
+  }
+  .cta-inner > *{position:relative;z-index:1;}
+  .cta-inner h2{font-size:28px;margin-bottom:12px;}
+  .cta-inner p{color:#CBD3F0;font-size:15px;margin-bottom:26px;max-width:52ch;margin-left:auto;margin-right:auto;}
+  .cta-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .cta-note{font-size:12px;color:#9AA4D6;margin-top:18px;}
+
+  /* ---- FOOTER ---- */
+  .site-footer{background:#0F172A;color:#CBD5E1;padding:64px 0 0;}
+  .footer-grid{
+    max-width:100%;margin:0 auto;padding:0 48px;
+    display:grid;grid-template-columns:1.4fr repeat(4,1fr);gap:32px;padding-bottom:48px;
+  }
+  .footer-brand .brand-name{color:#fff;}
+  .footer-brand p{font-size:13.5px;color:#94A3B8;line-height:1.6;margin:14px 0 18px;max-width:34ch;}
+  .footer-social{display:flex;gap:10px;}
+  .footer-social a{width:34px;height:34px;border-radius:9px;background:#1E293B;display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .footer-social a:hover{background:#334155;}
+  .footer-col h4{font-size:12.5px;color:#fff;text-transform:uppercase;letter-spacing:.05em;margin-bottom:16px;}
+  .footer-col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px;}
+  .footer-col a{font-size:13.5px;color:#94A3B8;}
+  .footer-col a:hover{color:#fff;}
+  .footer-bottom{
+    border-top:1px solid #1E293B;padding:22px 48px;max-width:100%;margin:0 auto;
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:12.5px;color:#64748B;
+  }
+  .footer-bottom a{color:#94A3B8;}
+  .footer-badge{display:flex;align-items:center;gap:8px;}
+  .footer-note{
+    max-width:100%;margin:0 auto;padding:0 48px 28px;font-size:12px;color:#64748B;line-height:1.6;
+  }
+
+  @media (max-width:920px){
+    .feature-grid,.roles-grid{grid-template-columns:1fr;}
+    .guide{grid-template-columns:1fr;}
+    .footer-grid{grid-template-columns:1fr 1fr;}
+  }
+
+  .role-toggle{display:flex;gap:8px;margin-bottom:20px;background:var(--bg);padding:4px;border-radius:11px;}
+  .role-toggle-btn{flex:1;padding:10px;border:none;background:none;border-radius:8px;font-size:13.5px;font-weight:700;color:var(--muted);}
+  .role-toggle-btn.active{background:#fff;color:var(--text);box-shadow:var(--shadow-sm);}
+  .verify-note{background:var(--field-dim,#DEE9DF);color:#2F5A3B;border:1px solid #BFDCC7;padding:11px 13px;border-radius:10px;font-size:12px;margin-bottom:16px;line-height:1.5;}
+  .id-upload-box{
+    border:1.5px dashed var(--border);border-radius:11px;padding:20px;text-align:center;color:var(--muted);
+    font-size:12.5px;background:#FAFBFD;cursor:pointer;transition:border-color .15s;
+  }
+  .id-upload-box:hover{border-color:var(--primary);color:var(--primary);}
+  .id-upload-box.has-file{border-color:var(--success);color:var(--success);background:var(--success-bg);}
+
+  /* ============ AUTH MODAL ============ */
+  .auth-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;}
+  .auth-panel{background:#fff;width:420px;max-width:100%;border-radius:16px;padding:32px;box-shadow:var(--shadow-md);}
+  .auth-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+  .auth-close{background:none;border:none;font-size:20px;color:var(--muted);line-height:1;}
+  .auth-role-tag{display:inline-block;font-size:12px;font-weight:700;color:var(--primary);background:var(--primary-light);padding:4px 10px;border-radius:99px;margin-bottom:16px;}
+  .auth-switch{display:flex;gap:20px;margin-bottom:22px;border-bottom:1px solid var(--border);}
+  .auth-switch button{background:none;border:none;padding:10px 0;font-size:14px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;}
+  .auth-switch button.active{color:var(--text);border-bottom-color:var(--primary);}
+  .field-group{margin-bottom:14px;}
+  .field-group label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px;color:var(--text-soft);}
+  .field-group input,.field-group select,.field-group textarea{
+    width:100%;padding:10px 13px;border:1px solid var(--border);background:#fff;
+    font-family:inherit;font-size:14px;border-radius:9px;color:var(--text);
+  }
+  .field-group input:focus,.field-group select:focus,.field-group textarea:focus{border-color:var(--primary);}
+  .field-hint{font-size:11.5px;color:var(--muted);margin-top:5px;}
+  .auth-submit{width:100%;justify-content:center;margin-top:6px;}
+  .auth-foot{text-align:center;font-size:12.5px;color:var(--muted);margin-top:16px;}
+  .auth-foot a{text-decoration:underline;cursor:pointer;color:var(--primary);}
+
+  /* ============ APP ============ */
+  .app{display:none;}
+  .app.show{display:block;}
+  .page-wrap{max-width:100%;margin:0 auto;padding:28px 48px 60px;}
+  .page-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+  .page-head h1{font-size:24px;}
+  .page-head .sub{font-size:13.5px;color:var(--muted);margin-top:4px;}
+  .page{display:none;}
+  .page.show{display:block;}
+
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;}
+  .kpi{padding:20px;}
+  .kpi-top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .kpi-label{font-size:12.5px;font-weight:600;color:var(--muted);}
+  .kpi-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .kpi .num{font-family:'Inter Tight';font-weight:800;font-size:30px;margin-top:10px;}
+  .kpi .delta{font-size:12px;margin-top:5px;color:var(--muted);font-weight:500;}
+  .kpi .delta.up{color:var(--field);} .kpi .delta.warn{color:var(--danger);}
+
+  .section-title{display:flex;align-items:center;justify-content:space-between;margin:30px 0 14px;}
+  .section-title h2{font-size:16px;}
+  .section-title:first-child{margin-top:0;}
+
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;font-size:11.5px;font-weight:700;border-radius:99px;white-space:nowrap;}
+  .badge.status-pending{background:var(--pending-bg);color:var(--pending);}
+  .badge.status-review{background:var(--info-bg);color:var(--info);}
+  .badge.status-progress{background:var(--warning-bg);color:var(--warning);}
+  .badge.status-resolved{background:var(--success-bg);color:var(--success);}
+  .badge.pr-low{background:var(--pending-bg);color:var(--pending);}
+  .badge.pr-medium{background:var(--info-bg);color:var(--info);}
+  .badge.pr-high{background:var(--warning-bg);color:var(--warning);}
+  .badge.pr-critical{background:var(--danger-bg);color:var(--danger);}
+
+  /* progress bar for report status */
+  .progress-track{display:flex;gap:3px;width:120px;flex-shrink:0;}
+  .progress-seg{flex:1;height:6px;border-radius:3px;background:var(--pending-bg);}
+  .progress-seg.filled{background:var(--seg-color,var(--primary));}
+  .progress-wrap{display:flex;flex-direction:column;gap:5px;}
+  .progress-caption{font-size:10.5px;color:var(--muted);font-weight:600;}
+
+  .filters{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center;}
+  .filter-chip{padding:8px 15px;border:1px solid var(--border);background:#fff;font-size:12.5px;font-weight:600;border-radius:99px;color:var(--text-soft);}
+  .filter-chip.active{background:var(--text);color:#fff;border-color:var(--text);}
+  .search-input{
+    padding:9px 14px;border:1px solid var(--border);border-radius:9px;font-size:13.5px;font-family:inherit;
+    min-width:220px;background:#fff;
+  }
+  .filters-right{margin-left:auto;display:flex;gap:10px;}
+
+  /* report row - table-like card for admin all-reports */
+  .report-row{
+    display:grid;grid-template-columns:64px 1fr 110px 150px auto 40px;gap:16px;align-items:center;
+    background:#fff;border:1px solid var(--border);padding:16px 18px;margin-bottom:10px;border-radius:11px;cursor:pointer;
+    transition:box-shadow .15s,border-color .15s;
+  }
+  .report-row:hover{box-shadow:var(--shadow-md);border-color:#D6DAE3;}
+  .r-id{font-size:12px;color:var(--muted);font-weight:600;}
+  .r-main .r-title{font-size:14.5px;font-weight:700;margin-bottom:4px;color:var(--text);}
+  .r-main .r-meta{font-size:12px;color:var(--muted);}
+  .r-tech{font-size:12.5px;color:var(--text-soft);text-align:right;}
+  .r-tech .r-tech-label{display:block;font-size:10.5px;color:var(--muted);font-weight:600;}
+  .r-arrow{color:var(--muted);font-size:15px;text-align:center;}
+  @media (max-width:1000px){
+    .report-row{grid-template-columns:1fr;gap:10px;}
+    .progress-track{width:100%;}
+  }
+
+  .ticket-slip{
+    display:grid;grid-template-columns:auto 1fr auto auto;gap:16px;align-items:center;
+    background:#fff;border:1px solid var(--border);padding:16px 18px;margin-bottom:10px;border-radius:11px;cursor:pointer;
+  }
+  .ticket-slip:hover{box-shadow:var(--shadow-md);}
+  .t-id{font-size:12px;color:var(--muted);font-weight:600;width:60px;}
+  .t-main .t-title{font-size:14.5px;font-weight:700;margin-bottom:4px;}
+  .t-main .t-meta{font-size:12px;color:var(--muted);}
+
+  table{width:100%;border-collapse:collapse;}
+  thead th{text-align:left;font-size:11.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:12px 16px;border-bottom:1px solid var(--border);background:#FAFBFD;}
+  tbody td{padding:14px 16px;font-size:13.5px;border-bottom:1px solid var(--border);}
+  tbody tr:hover{background:#FAFBFD;}
+  .table-wrap{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:#fff;}
+
+  .cond-good{color:var(--success);font-weight:700;} .cond-damaged{color:var(--danger);font-weight:700;}
+  .cond-missing{color:var(--warning);font-weight:700;} .cond-repair{color:var(--info);font-weight:700;}
+
+  .form-card{max-width:640px;padding:28px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .verify-box{background:var(--warning-bg);border:1px solid #F0D19B;color:#8A5B12;padding:13px 16px;border-radius:10px;margin-bottom:18px;font-size:12.5px;}
+  .priority-select{display:flex;gap:8px;}
+  .priority-opt{flex:1;border:1.5px solid var(--border);padding:10px;text-align:center;border-radius:9px;font-size:12.5px;font-weight:700;color:var(--muted);}
+  .priority-opt.selected.sel-low{border-color:var(--pending);color:var(--pending);background:var(--pending-bg);}
+  .priority-opt.selected.sel-medium{border-color:var(--info);color:var(--info);background:var(--info-bg);}
+  .priority-opt.selected.sel-high{border-color:var(--warning);color:var(--warning);background:var(--warning-bg);}
+  .priority-opt.selected.sel-critical{border-color:var(--danger);color:var(--danger);background:var(--danger-bg);}
+  .upload-box{border:1.5px dashed var(--border);padding:26px;text-align:center;border-radius:11px;color:var(--muted);font-size:13px;background:#FAFBFD;}
+  .dup-warning{background:var(--danger-bg);border:1px solid #F3C6C7;color:var(--danger);padding:12px 14px;font-size:12.5px;border-radius:10px;margin-top:14px;display:none;}
+  .dup-warning.show{display:block;}
+
+  .side-overlay{position:fixed;inset:0;background:rgba(15,23,42,.4);z-index:150;display:none;}
+  .side-overlay.show{display:block;}
+  .side-panel{
+    position:fixed;top:0;right:0;height:100vh;width:440px;max-width:92vw;background:#fff;z-index:151;
+    box-shadow:-8px 0 30px rgba(0,0,0,.15);transform:translateX(100%);transition:transform .25s ease;overflow-y:auto;padding:26px;
+  }
+  .side-overlay.show .side-panel{transform:translateX(0);}
+  .side-close{float:right;background:none;border:none;font-size:20px;color:var(--muted);}
+  .side-block{margin-top:22px;padding-top:18px;border-top:1px solid var(--border);}
+  .side-block label{display:block;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:8px;}
+  .status-track{display:flex;gap:6px;}
+  .status-step{flex:1;text-align:center;padding:8px 4px;font-size:11px;font-weight:700;background:var(--pending-bg);color:var(--muted);border-radius:8px;}
+  .status-step.done{background:var(--primary);color:#fff;}
+  .comment{background:#FAFBFD;padding:10px 12px;border-radius:9px;margin-bottom:8px;font-size:13px;border:1px solid var(--border);}
+  .comment b{display:block;font-size:11.5px;margin-bottom:3px;}
+  .comment-input{display:flex;gap:8px;margin-top:10px;}
+  .comment-input input{flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:9px;font-family:inherit;}
+
+  .barchart{display:flex;align-items:flex-end;gap:10px;height:160px;padding-top:10px;}
+  .barchart .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
+  .barchart .bar{width:100%;border-radius:5px 5px 0 0;}
+  .barchart .bar-label{font-size:10.5px;color:var(--muted);margin-top:6px;text-align:center;}
+  .hbar-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .hbar-label{width:130px;font-size:12.5px;flex-shrink:0;color:var(--text-soft);}
+  .hbar-track{flex:1;background:var(--pending-bg);height:10px;border-radius:6px;overflow:hidden;}
+  .hbar-fill{height:100%;background:var(--primary);border-radius:6px;}
+  .hbar-num{width:34px;text-align:right;font-size:12px;font-weight:700;color:var(--text-soft);}
+
+  .room-card{padding:20px;display:flex;flex-direction:column;gap:12px;}
+  .room-card .room-title{font-size:15px;font-weight:700;}
+  .room-card .room-meta{font-size:12px;color:var(--muted);}
+  .qr-box{width:52px;height:52px;background:repeating-conic-gradient(var(--text) 0% 25%, transparent 0% 50%) 50%/9px 9px;border-radius:8px;border:1px solid var(--border);}
+  .room-row{display:flex;justify-content:space-between;align-items:flex-start;}
+
+  .notif-item{display:flex;gap:12px;padding:15px 18px;border-bottom:1px solid var(--border);}
+  .notif-item.unread{background:var(--primary-light);}
+  .notif-dot{width:8px;height:8px;border-radius:50%;background:var(--primary);margin-top:5px;flex-shrink:0;}
+  .notif-text{font-size:13.5px;}
+  .notif-time{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .stars{color:var(--warning);font-size:16px;letter-spacing:2px;}
+
+  .empty{padding:44px;text-align:center;color:var(--muted);}
+  .empty .t{font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;}
+  .empty .s{font-size:13px;}
+
+  @media (max-width:920px){
+    .hero{grid-template-columns:1fr;padding:44px 20px;}
+    .hero-copy,.hero .stat-card{grid-column:1;}
+    .hero .stat-card{grid-row:2;}
+    .hero > div:nth-child(2){max-width:720px;}
+    .steps{grid-template-columns:1fr;}
+    .grid-4{grid-template-columns:1fr 1fr;}
+    .grid-2{grid-template-columns:1fr;}
+    .nav-links{display:none;}
+    .page-wrap{padding:20px 16px 50px;}
+    .form-row{grid-template-columns:1fr;}
+    .container,.navbar-inner{padding:0 16px;}
+    .hero{padding-left:20px;padding-right:20px;}
+    .howit,.section,.cta-band{padding-left:16px;padding-right:16px;}
+    .pulse-section{padding-left:16px;padding-right:16px;}
+    .pulse-grid{grid-template-columns:1fr;}
+    .pulse-head{align-items:flex-start;flex-direction:column;gap:10px;}
+    .footer-grid{padding:0 16px;}
+    .footer-bottom{padding:22px 16px;}
+    .footer-note{padding:0 16px 28px;}
+  }
+  @media (min-width:721px) and (max-width:920px){
+    .navbar-inner{padding:0 24px;}
+    .nav-links{display:flex;}
+    .hero{grid-template-columns:minmax(0,1fr) minmax(300px,.9fr);gap:24px;padding:52px 24px 48px;max-width:100%;}
+    .hero-copy{grid-column:1;grid-row:1;}
+    .hero .stat-card{grid-column:2;grid-row:1;}
+    .hero > div:nth-child(2){max-width:none;}
+    .stat-card{padding:20px;}
+    .stat-row{padding:10px 0;}
+    .stat-num{font-size:22px;}
+  }
+  @media (max-width:720px){
+    #view-landing .navbar-inner{display:flex;}
+    #view-landing .landing-links{display:none;}
+    .hero-scene{opacity:.55;}
+  }
+  @media (min-width:721px) and (max-width:1200px){
+    #view-landing .navbar-inner{padding-left:20px;padding-right:20px;gap:10px;}
+    #view-landing .landing-links{gap:0;}
+    #view-landing .landing-links a{padding-left:8px;padding-right:8px;font-size:12px;}
+    #view-landing .pill{padding-left:11px;padding-right:11px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LANDING ============ -->
+<div id="view-landing">
+  <div class="navbar">
+    <div class="navbar-inner">
+      <div class="brand"><div class="brand-mark">FX</div><div class="brand-name">Fixko</div></div>
+      <div class="landing-links">
+        <a href="#pulse">Campus pulse</a>
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#roles">For your school</a>
+        <a href="#verification">Verification</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div class="role-pills-top">
+        <button class="pill" onclick="openAuth('signin')">Sign in</button>
+        <button class="btn sm" onclick="openAuth('signup')">Get started</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-blob"></div>
+    <div class="hero-scene" aria-hidden="true"></div>
+    <div class="hero-copy">
+      <div class="hero-badge">● Campus facilities platform</div>
+      <h1>Broken chair, dead aircon,<br>flickering light —<br><span class="u">report it in 30 seconds.</span></h1>
+      <p>Fixko routes every report straight to the people who fix it, and keeps everyone posted from "seen it" to "fixed it." No more sticky notes on the maintenance office door.</p>
+      <div class="hero-actions">
+        <button class="btn" onclick="openAuth('signup')">Get started</button>
+        <button class="btn ghost" onclick="document.getElementById('how-it-works').scrollIntoView()">See how it works</button>
+      </div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-title"><span class="live-dot"></span>Campus status board</div>
+      <div class="stat-row"><span class="stat-label">Open tickets</span><span class="stat-num amber" data-count="42">0</span></div>
+      <div class="stat-row"><span class="stat-label">In progress</span><span class="stat-num" data-count="18">0</span></div>
+      <div class="stat-row"><span class="stat-label">Critical, unresolved</span><span class="stat-num rust" data-count="3">0</span></div>
+      <div class="stat-row"><span class="stat-label">Resolved this term</span><span class="stat-num field" data-count="231">0</span></div>
+      <div class="stat-row"><span class="stat-label">Avg. time to resolve</span><span class="stat-num">2.4d</span></div>
+      <div class="stat-caption">Sample data shown for illustration — your board reflects your own campus.</div>
+    </div>
+  </section>
+
+  <!-- TRUST STRIP -->
+  <div class="trust-strip">
+    <div class="container">
+      <div class="trust-item"><span class="ic">✓</span> Built for school email domains</div>
+      <div class="trust-item"><span class="ic">✓</span> Mobile-friendly reporting</div>
+      <div class="trust-item"><span class="ic">✓</span> Role-based access for students, faculty & admins</div>
+      <div class="trust-item"><span class="ic">✓</span> Exportable ticket & inventory data</div>
+    </div>
+  </div>
+
+  <!-- CAMPUS PULSE -->
+  <section class="pulse-section reveal" id="pulse" aria-label="Campus pulse">
+    <div class="pulse-head">
+      <div>
+        <h2>Your campus, at a glance</h2>
+        <p>Live signals help facilities teams decide what needs attention first.</p>
+      </div>
+      <button class="pulse-link" onclick="openAuth('signin')">Preview the dashboard →</button>
+    </div>
+    <div class="pulse-grid">
+      <article class="card pulse-card">
+        <div class="pulse-card-top"><span class="pulse-label">Reports this week</span><span class="pulse-status">+18%</span></div>
+        <div class="pulse-value">64</div>
+        <p>Most reports are being resolved before they become repeat issues.</p>
+        <div class="pulse-track"><div class="pulse-fill" style="width:72%;"></div></div>
+      </article>
+      <article class="card pulse-card">
+        <div class="pulse-card-top"><span class="pulse-label">Resolved on time</span><span class="pulse-status">On track</span></div>
+        <div class="pulse-value">87%</div>
+        <p>Teams can see overdue work early and keep students in the loop.</p>
+        <div class="pulse-track"><div class="pulse-fill field" style="width:87%;"></div></div>
+      </article>
+      <article class="card pulse-card">
+        <div class="pulse-card-top"><span class="pulse-label">Busiest location</span><span class="pulse-status" style="color:var(--warning);background:var(--warning-bg);">Watch</span></div>
+        <div class="pulse-value">Room 204</div>
+        <p>3 open tickets are grouped together so admins can spot patterns.</p>
+        <div class="pulse-track"><div class="pulse-fill warning" style="width:58%;"></div></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <div class="section-head reveal">
+      <span class="section-eyebrow">Features</span>
+      <h2>Everything a facilities team actually needs</h2>
+      <p>Fixko isn't just a form. It's the full loop — from the first report to the repair log and the numbers that show what keeps breaking.</p>
+    </div>
+    <div class="feature-grid">
+      <div class="card feature-card reveal"><div class="feature-icon" style="background:var(--primary-light);color:var(--primary);">✎</div><h3>Facility reporting</h3><p>Students and faculty report damage or missing items in seconds, with an optional photo attached.</p></div>
+      <div class="card feature-card reveal"><div class="feature-icon" style="background:var(--info-bg);color:var(--info);">◧</div><h3>Ticket tracking</h3><p>Every report moves through Pending, Under review, In progress, and Resolved — visible to everyone involved.</p></div>
+      <div class="card feature-card reveal"><div class="feature-icon" style="background:var(--warning-bg);color:var(--warning);">⌗</div><h3>QR code per room</h3><p>Print a QR code for each room that opens the report form pre-filled — no manual room selection needed.</p></div>
+      <div class="card feature-card reveal"><div class="feature-icon" style="background:var(--success-bg);color:var(--success);">📊</div><h3>Analytics dashboard</h3><p>See the most-reported items, tickets by department, and average resolution time at a glance.</p></div>
+      <div class="card feature-card reveal"><div class="feature-icon" style="background:var(--danger-bg);color:var(--danger);">!</div><h3>Priority & duplicate alerts</h3><p>Reports are flagged Low to Critical, and the system warns when similar tickets are already open.</p></div>
+      <div class="card feature-card reveal"><div class="feature-icon" style="background:var(--primary-light);color:var(--primary);">🗄</div><h3>Inventory & repair log</h3><p>Track equipment condition per room and keep a running history of repairs and replacements.</p></div>
+    </div>
+  </section>
+
+  <!-- INTERACTIVE GUIDE -->
+  <section class="section" id="how-it-works">
+    <div class="section-head reveal">
+      <span class="section-eyebrow">How it works</span>
+      <h2>From a broken chair to a closed ticket</h2>
+      <p>A short walkthrough of what happens after something gets reported.</p>
+    </div>
+    <div class="guide reveal">
+      <div class="guide-tabs" id="guideTabs">
+        <button class="guide-tab active" data-step="0">
+          <div class="guide-tab-num">1</div>
+          <div style="flex:1;">
+            <div class="guide-tab-title">Report the issue</div>
+            <div class="guide-tab-sub">Scan the room's QR code or pick it from a list, describe what's wrong, and set a priority.</div>
+            <div class="guide-progress-track"><div class="guide-progress-fill"></div></div>
+          </div>
+        </button>
+        <button class="guide-tab" data-step="1">
+          <div class="guide-tab-num">2</div>
+          <div style="flex:1;">
+            <div class="guide-tab-title">It reaches the right people</div>
+            <div class="guide-tab-sub">Admins see it instantly, check for duplicates, and assign a technician.</div>
+            <div class="guide-progress-track"><div class="guide-progress-fill"></div></div>
+          </div>
+        </button>
+        <button class="guide-tab" data-step="2">
+          <div class="guide-tab-num">3</div>
+          <div style="flex:1;">
+            <div class="guide-tab-title">Track it in real time</div>
+            <div class="guide-tab-sub">The reporter sees status updates and can message the technician directly on the ticket.</div>
+            <div class="guide-progress-track"><div class="guide-progress-fill"></div></div>
+          </div>
+        </button>
+        <button class="guide-tab" data-step="3">
+          <div class="guide-tab-num">4</div>
+          <div style="flex:1;">
+            <div class="guide-tab-title">Resolve & rate it</div>
+            <div class="guide-tab-sub">Once fixed, the reporter rates the repair — feeding straight into the analytics dashboard.</div>
+            <div class="guide-progress-track"><div class="guide-progress-fill"></div></div>
+          </div>
+        </button>
+      </div>
+      <div class="demo-frame">
+        <div class="demo-panel active" data-panel="0">
+          <div class="kpi-label" style="margin-bottom:14px;">New report — Room 204</div>
+          <div class="field-group"><label>What's the issue?</label><input type="text" value="Aircon leaking onto floor" disabled></div>
+          <div class="field-group"><label>Priority</label>
+            <div class="priority-select"><div class="priority-opt">low</div><div class="priority-opt">medium</div><div class="priority-opt">high</div><div class="priority-opt selected sel-critical">critical</div></div>
+          </div>
+          <div class="upload-box">📷 photo_attached.jpg</div>
+        </div>
+        <div class="demo-panel" data-panel="1">
+          <div class="kpi-label" style="margin-bottom:14px;">Admin queue</div>
+          <div class="demo-mock-ticket"><div><div class="demo-mock-title">Aircon leaking onto floor</div><div class="demo-mock-meta">Room 204 · just now</div></div><span class="badge pr-critical">critical</span></div>
+          <div class="dup-warning show" style="margin-top:6px;">⚠ 2 similar reports already open for Room 204.</div>
+          <div class="field-group" style="margin-top:16px;"><label>Assign technician</label><select><option>R. Aquino</option><option>L. Ferrer</option></select></div>
+        </div>
+        <div class="demo-panel" data-panel="2">
+          <div class="kpi-label" style="margin-bottom:14px;">Ticket FX-1042</div>
+          <div class="status-track" style="margin-bottom:16px;">
+            <div class="status-step done">Pending</div><div class="status-step done">Review</div><div class="status-step done">Progress</div><div class="status-step">Resolved</div>
+          </div>
+          <div class="comment"><b>R. Aquino</b>On it — checking the unit this afternoon.</div>
+          <div class="comment"><b>Maria Santos</b>Thank you, it's gotten worse since this morning.</div>
+        </div>
+        <div class="demo-panel" data-panel="3">
+          <div class="kpi-label" style="margin-bottom:14px;">Ticket FX-1042 · Resolved</div>
+          <div class="status-track" style="margin-bottom:16px;">
+            <div class="status-step done">Pending</div><div class="status-step done">Review</div><div class="status-step done">Progress</div><div class="status-step done">Resolved</div>
+          </div>
+          <div class="field-group"><label>Rate the repair</label><div class="stars">★★★★★</div></div>
+          <div class="comment"><b>Maria Santos</b>Fixed same day, thank you!</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROLES -->
+  <section class="section" id="roles" style="padding-top:0;">
+    <div class="section-head reveal">
+      <span class="section-eyebrow">Built for every role</span>
+      <h2>One system, three very different jobs</h2>
+      <p>Each account sees exactly what's relevant to them — nothing more.</p>
+    </div>
+    <div class="roles-grid">
+      <div class="card role-card reveal">
+        <h3>Students</h3>
+        <div class="role-tagline">Report and track your own tickets</div>
+        <ul>
+          <li><span class="check">✓</span>Submit a report with photo and priority in under a minute</li>
+          <li><span class="check">✓</span>See the status of everything you've reported</li>
+          <li><span class="check">✓</span>Message the technician on your ticket</li>
+          <li><span class="check">✓</span>Rate the repair once it's resolved</li>
+        </ul>
+      </div>
+      <div class="card role-card faculty reveal">
+        <h3>Faculty</h3>
+        <div class="role-tagline">Everything students get, plus department visibility</div>
+        <ul>
+          <li><span class="check">✓</span>See every ticket reported in your department</li>
+          <li><span class="check">✓</span>Filter by status to spot what's stalled</li>
+          <li><span class="check">✓</span>Same fast reporting form as students</li>
+          <li><span class="check">✓</span>Get notified the moment status changes</li>
+        </ul>
+      </div>
+      <div class="card role-card admin reveal">
+        <h3>Admins</h3>
+        <div class="role-tagline">Full visibility and control across campus</div>
+        <ul>
+          <li><span class="check">✓</span>See every report campus-wide with live progress</li>
+          <li><span class="check">✓</span>Assign technicians and update ticket status</li>
+          <li><span class="check">✓</span>Track inventory condition and repair history</li>
+          <li><span class="check">✓</span>Export tickets and view analytics by department</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- FACULTY VERIFICATION -->
+  <section class="section" id="verification" style="padding-top:0;">
+    <div class="section-head reveal">
+      <span class="section-eyebrow">Trust & verification</span>
+      <h2>Why every faculty account is checked by hand</h2>
+      <p>Students verify with a school email and Student Number. Because faculty accounts see department-wide reports, Fixko asks for one more thing before a teacher account goes live.</p>
+    </div>
+    <div class="grid-2" style="align-items:stretch;">
+      <div class="card reveal" style="padding:28px;">
+        <div class="kpi-label" style="margin-bottom:16px;">What a faculty sign-up requires</div>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;">
+          <li style="display:flex;gap:12px;"><span class="feature-icon" style="width:34px;height:34px;font-size:14px;background:var(--primary-light);color:var(--primary);flex-shrink:0;">✉</span><div><b style="font-size:13.5px;">School faculty email</b><div style="font-size:12.5px;color:var(--muted);">Must match your school's verified domain — checked automatically at sign-up.</div></div></li>
+          <li style="display:flex;gap:12px;"><span class="feature-icon" style="width:34px;height:34px;font-size:14px;background:var(--info-bg);color:var(--info);flex-shrink:0;">#</span><div><b style="font-size:13.5px;">Employee / Teacher ID number</b><div style="font-size:12.5px;color:var(--muted);">A unique identifier the admin office already has on file — no two accounts can share one.</div></div></li>
+          <li style="display:flex;gap:12px;"><span class="feature-icon" style="width:34px;height:34px;font-size:14px;background:var(--warning-bg);color:var(--warning);flex-shrink:0;">🪪</span><div><b style="font-size:13.5px;">Photo of your school ID</b><div style="font-size:12.5px;color:var(--muted);">Uploaded at sign-up and matched against the ID number by an admin before the account is approved.</div></div></li>
+        </ul>
+      </div>
+      <div class="card reveal" style="padding:28px;">
+        <div class="kpi-label" style="margin-bottom:16px;">What happens after you sign up</div>
+        <div class="status-track" style="margin-bottom:18px;">
+          <div class="status-step done">Submitted</div><div class="status-step done">Under review</div><div class="status-step">Verified</div>
+        </div>
+        <p style="font-size:13.5px;color:var(--text-soft);line-height:1.65;margin:0 0 14px;">Your account is created right away in a <b>pending</b> state so nothing blocks your sign-up. An admin checks your ID photo against the ID number and department records, then approves the account — you'll get a notification either way.</p>
+        <p style="font-size:12.5px;color:var(--muted);line-height:1.6;margin:0;">This keeps department ticket views limited to actual faculty, and stops anyone from posing as a teacher to see other departments' reports.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="section-head reveal">
+      <span class="section-eyebrow">FAQ</span>
+      <h2>Good to know</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>Who can sign up?</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Students and faculty sign up themselves with their school email. Admin accounts are pre-built by the school, not created through public sign-up — there's no public option to register as an admin.</div></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>What do students need to sign up?</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Just your school email and your Student Number. That's the full identity check for a student account.</div></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>What do faculty need, and why is it more than students?</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Faculty email, Teacher/Employee ID number, and a photo of your school ID. Faculty accounts can see every ticket in a department, so Fixko confirms the person behind the account before granting that access.</div></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>Why does the report form ask for my ID again if I'm already signed in?</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">It's a verification step on every ticket, not just your profile. The field is pre-filled from your account but stays editable so you actively confirm it before submitting.</div></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>Can I report anonymously?</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">No. Every report is tied to a verified account and ID so admins can follow up if they need more detail.</div></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>What happens after I submit a report?</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">It's checked for duplicates, added to the admin queue, and moves through Pending → Under review → In progress → Resolved. You'll see the status update on your ticket as it moves.</div></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>Can admins export the data?</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Yes — tickets and inventory can be exported to CSV or Excel from the admin dashboard.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <div class="cta-band reveal">
+    <div class="cta-inner">
+      <h2>Ready to stop chasing paper reports?</h2>
+      <p>Create your account with your school email — students get in instantly, faculty accounts are verified against your ID before activation.</p>
+      <div class="cta-actions">
+        <button class="btn" style="background:#fff;color:#111827;border-color:#fff;" onclick="openAuth('signup')">Get started</button>
+        <button class="btn ghost" style="border-color:#4B5563;color:#fff;" onclick="openAuth('signin')">Sign in</button>
+      </div>
+      <div class="cta-note">No credit card, no setup fee — this is an internal school tool.</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="brand"><div class="brand-mark">FX</div><div class="brand-name">Fixko</div></div>
+        <p>Facility reporting and ticket management built for schools — from the first report to the repair log.</p>
+        <div class="footer-social">
+          <a href="#" aria-label="Email">✉</a>
+          <a href="#" aria-label="Facebook">f</a>
+          <a href="#" aria-label="X">𝕏</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how-it-works">How it works</a></li>
+          <li><a href="#roles">For students & faculty</a></li>
+          <li><a href="#roles">For admins</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a onclick="openAuth('signup')">Report an issue</a></li>
+          <li><a href="#verification">Faculty verification</a></li>
+          <li><a href="#">Contact support</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About Fixko</a></li>
+          <li><a href="#">Contact us</a></li>
+          <li><a href="#">Feedback</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Privacy policy</a></li>
+          <li><a href="#">Terms of use</a></li>
+          <li><a href="#">Data handling</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-note">This page is a design prototype for Fixko's facility reporting system. Figures shown on this page (ticket counts, resolution times, ratings) are illustrative sample data for demonstration purposes and do not represent a live deployment.</div>
+    <div class="footer-bottom">
+      <div>© 2026 Fixko. Built for schools.</div>
+      <div class="footer-badge">Prototype build · not connected to a live database · <a onclick="openAuth('admin')" style="cursor:pointer;text-decoration:underline;">Staff &amp; admin portal</a></div>
+    </div>
+  </footer>
+</div>
+
+<!-- ============ AUTH MODAL ============ -->
+<div class="auth-overlay hidden" id="authOverlay">
+  <div class="auth-panel">
+    <div class="auth-head">
+      <span class="auth-role-tag" id="authRoleTag">GET STARTED</span>
+      <button class="auth-close" onclick="closeAuth()">✕</button>
+    </div>
+
+    <!-- role toggle: student / faculty only — admin has no public toggle -->
+    <div class="role-toggle" id="roleToggle">
+      <button class="role-toggle-btn active" data-role="student" onclick="setAuthRole('student')">🎓 Student</button>
+      <button class="role-toggle-btn" data-role="faculty" onclick="setAuthRole('faculty')">🧑‍🏫 Faculty</button>
+    </div>
+
+    <div class="auth-switch" id="authSwitch">
+      <button id="tabSignin" onclick="setAuthTab('signin')">Sign in</button>
+      <button id="tabSignup" class="active" onclick="setAuthTab('signup')">Sign up</button>
+    </div>
+
+    <!-- SIGN IN (shared shape for student/faculty; admin uses this same form, role fixed) -->
+    <div id="signinForm" class="hidden">
+      <div class="field-group"><label id="signinEmailLabel">School email</label><input type="email" id="signinEmail" placeholder="you@school.edu.ph"></div>
+      <div class="field-group"><label>Password</label><input type="password" placeholder="••••••••"></div>
+      <button class="btn auth-submit" onclick="enterApp()">Sign in</button>
+      <div class="auth-foot" id="signinFoot">Forgot your password? <a>Reset it</a></div>
+    </div>
+
+    <!-- SIGN UP: STUDENT -->
+    <div id="signupStudent">
+      <div class="field-group"><label>Full name</label><input type="text" placeholder="Juan Dela Cruz"></div>
+      <div class="field-group"><label>Student email</label><input type="email" placeholder="you@school.edu.ph">
+        <div class="field-hint">Must match your school's student email domain — checked automatically.</div></div>
+      <div class="field-group"><label>Student Number</label><input type="text" placeholder="2023-04521">
+        <div class="field-hint">Your unique Student Number — one account per number.</div></div>
+      <div class="field-group"><label>Password</label><input type="password" placeholder="Create a password"></div>
+      <button class="btn auth-submit" onclick="enterApp()">Create student account</button>
+      <div class="auth-foot">Already have an account? <a onclick="setAuthTab('signin')">Sign in</a></div>
+    </div>
+
+    <!-- SIGN UP: FACULTY -->
+    <div id="signupFaculty" class="hidden">
+      <div class="verify-note">🪪 Faculty accounts are verified by an admin before full access is granted — this protects department-level ticket data.</div>
+      <div class="field-group"><label>Full name</label><input type="text" placeholder="Mrs. Bautista"></div>
+      <div class="field-group"><label>Faculty email</label><input type="email" placeholder="you@school.edu.ph">
+        <div class="field-hint">Must match your school's staff email domain — checked automatically.</div></div>
+      <div class="field-group"><label>Teacher / Employee ID number</label><input type="text" placeholder="F-0044">
+        <div class="field-hint">The unique ID number on file with your school's admin office.</div></div>
+      <div class="field-group"><label>Photo of your school ID</label>
+        <div class="id-upload-box" onclick="document.getElementById('idPhotoInput').click()">
+          <div id="idUploadLabel">📷 Click to upload a clear photo of your school ID</div>
+          <input type="file" id="idPhotoInput" accept="image/*" class="hidden" onchange="handleIdPhoto(this)">
+        </div>
+        <div class="field-hint">Used only to match your name and ID number for verification.</div>
+      </div>
+      <div class="field-group"><label>Password</label><input type="password" placeholder="Create a password"></div>
+      <button class="btn field auth-submit" onclick="enterApp()">Submit for verification</button>
+      <div class="auth-foot">Already have an account? <a onclick="setAuthTab('signin')">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div class="app" id="appShell">
+  <div class="navbar">
+    <div class="navbar-inner">
+      <div class="brand"><div class="brand-mark">FX</div><div class="brand-name">Fixko</div></div>
+      <div class="nav-links" id="navLinks"></div>
+      <div class="nav-right">
+        <button class="bell" onclick="go('notifications')">🔔<span class="dot"></span></button>
+        <div class="user-menu">
+          <div class="avatar" id="topAvatar">JD</div>
+          <div>
+            <div class="user-name-sm" id="userName">Juan Dela Cruz</div>
+            <div class="user-role-sm" id="userRoleLabel">Student</div>
+          </div>
+        </div>
+        <button class="signout-sm" title="Sign out" onclick="signOut()">⏻</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-wrap">
+    <div class="page-head">
+      <div><h1 id="pageTitle">Dashboard</h1><div class="sub" id="pageSub">Welcome back.</div></div>
+      <div id="pageHeadActions"></div>
+    </div>
+    <div id="contentArea"></div>
+  </div>
+</div>
+
+<div class="side-overlay" id="sideOverlay" onclick="if(event.target===this) closeSidePanel()">
+  <div class="side-panel" id="sidePanel"></div>
+</div>
+
+<script>
+/* ===================== LANDING PAGE INTERACTIONS ===================== */
+// Scroll-reveal
+document.addEventListener('DOMContentLoaded', ()=>{
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {threshold:0.12});
+  revealEls.forEach(el=>io.observe(el));
+
+  // Add a subtle desktop-only 3D response to the status board.
+  const tiltCard = document.querySelector('.hero .stat-card');
+  const motionReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pointerFine = window.matchMedia('(pointer: fine)').matches;
+  if(tiltCard && pointerFine && !motionReduced){
+    tiltCard.addEventListener('pointermove', (event)=>{
+      const bounds = tiltCard.getBoundingClientRect();
+      const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+      const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+      tiltCard.style.animationPlayState = 'paused';
+      tiltCard.style.transform = `translateY(-4px) rotateX(${y * -5}deg) rotateY(${x * 6}deg)`;
+    });
+    tiltCard.addEventListener('pointerleave', ()=>{
+      tiltCard.style.transform = '';
+      tiltCard.style.animationPlayState = '';
+    });
+  }
+
+  // Count-up stats
+  const countEls = document.querySelectorAll('[data-count]');
+  const countIO = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(!entry.isIntersecting) return;
+      countIO.unobserve(entry.target);
+      const target = parseInt(entry.target.dataset.count, 10);
+      const start = performance.now();
+      const dur = 900;
+      function tick(now){
+        const p = Math.min(1,(now-start)/dur);
+        entry.target.textContent = Math.round(target * (1-Math.pow(1-p,3)));
+        if(p<1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    });
+  }, {threshold:0.4});
+  countEls.forEach(el=>countIO.observe(el));
+
+  // Interactive guide (tabs + autoplay)
+  const guideTabs = document.querySelectorAll('.guide-tab');
+  const demoPanels = document.querySelectorAll('.demo-panel');
+  let guideStep = 0, guideTimer = null;
+  function setGuideStep(i){
+    guideStep = i;
+    guideTabs.forEach(t=>t.classList.toggle('active', +t.dataset.step === i));
+    demoPanels.forEach(p=>p.classList.toggle('active', +p.dataset.panel === i));
+  }
+  function restartAutoplay(){
+    clearInterval(guideTimer);
+    guideTimer = setInterval(()=>{ setGuideStep((guideStep+1) % guideTabs.length); }, 4500);
+  }
+  guideTabs.forEach(tab=>{
+    tab.addEventListener('click', ()=>{ setGuideStep(+tab.dataset.step); restartAutoplay(); });
+  });
+  if(guideTabs.length){ setGuideStep(0); restartAutoplay(); }
+});
+
+// FAQ accordion
+function toggleFaq(btn){
+  const item = btn.closest('.faq-item');
+  const wasOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(el=>el.classList.remove('open'));
+  if(!wasOpen) item.classList.add('open');
+}
+
+/* ===================== SAMPLE DATA ===================== */
+const rooms = [
+  {id:'R-101', name:'Room 101', building:'Main Building', dept:'General', open:2},
+  {id:'R-204', name:'Room 204', building:'Main Building', dept:'Science', open:3},
+  {id:'LAB-2', name:'Computer Lab 2', building:'Tech Wing', dept:'ICT', open:1},
+  {id:'GYM', name:'Gymnasium', building:'Annex', dept:'PE', open:0},
+  {id:'FAC-LNG', name:'Faculty Lounge', building:'Main Building', dept:'Admin', open:1},
+  {id:'LIB', name:'Library', building:'Main Building', dept:'General', open:2},
+];
+const tickets = [
+  {id:'FX-1042', title:'Aircon leaking onto floor', room:'Room 204', reporter:'Maria Santos', reporterId:'2022-01187', priority:'critical', status:'progress', dept:'Science', tech:'R. Aquino', created:'2h ago', desc:'Water pooling under the unit since this morning, getting worse.'},
+  {id:'FX-1041', title:'Projector bulb burned out', room:'Room 101', reporter:'Juan Dela Cruz', reporterId:'2023-04521', priority:'medium', status:'review', dept:'General', tech:'Unassigned', created:'5h ago', desc:'Screen is completely dark, bulb likely needs replacing.'},
+  {id:'FX-1039', title:'3 chairs with broken legs', room:'Room 204', reporter:'Ana Reyes', reporterId:'2021-09933', priority:'low', status:'pending', dept:'Science', tech:'Unassigned', created:'Yesterday', desc:'Chairs near the back row are wobbly, minor risk.'},
+  {id:'FX-1037', title:'Lab PC won\'t power on', room:'Computer Lab 2', reporter:'Mark Villanueva', reporterId:'2023-11209', priority:'high', status:'progress', dept:'ICT', tech:'L. Ferrer', created:'2 days ago', desc:'Unit 12 unresponsive, checked power strip already.'},
+  {id:'FX-1035', title:'Ceiling tile water stain', room:'Library', reporter:'Grace Uy', reporterId:'2023-02290', priority:'medium', status:'pending', dept:'General', tech:'Unassigned', created:'2 days ago', desc:'Brown stain spreading near the reading area, possible leak above.'},
+  {id:'FX-1033', title:'Broken window latch', room:'Faculty Lounge', reporter:'Mrs. Bautista', reporterId:'F-0044', priority:'medium', status:'resolved', dept:'Admin', tech:'R. Aquino', created:'4 days ago', desc:'Latch won\'t catch, window swings open in wind.'},
+  {id:'FX-1029', title:'Flickering hallway light', room:'Library', reporter:'Juan Dela Cruz', reporterId:'2023-04521', priority:'low', status:'resolved', dept:'General', tech:'R. Aquino', created:'1 week ago', desc:'Light near the returns desk flickers constantly.'},
+  {id:'FX-1027', title:'Gym mat torn at seam', room:'Gymnasium', reporter:'Coach Dizon', reporterId:'F-0012', priority:'medium', status:'resolved', dept:'PE', tech:'L. Ferrer', created:'1 week ago', desc:'Seam torn, foam exposed — trip hazard.'},
+];
+const equipment = [
+  {id:'EQ-201', name:'Split-type aircon', room:'Room 204', cond:'damaged', category:'HVAC'},
+  {id:'EQ-118', name:'Ceiling projector', room:'Room 101', cond:'repair', category:'AV'},
+  {id:'EQ-330', name:'Student chair (x24)', room:'Room 204', cond:'damaged', category:'Furniture'},
+  {id:'EQ-412', name:'Desktop PC — Unit 12', room:'Computer Lab 2', cond:'damaged', category:'ICT'},
+  {id:'EQ-088', name:'Window latch set', room:'Faculty Lounge', cond:'good', category:'Fixtures'},
+  {id:'EQ-509', name:'Floor mat set', room:'Gymnasium', cond:'good', category:'PE Equipment'},
+];
+const usersList = [
+  {name:'Juan Dela Cruz', id:'2023-04521', role:'Student', dept:'General', email:'jdelacruz@school.edu.ph'},
+  {name:'Maria Santos', id:'2022-01187', role:'Student', dept:'Science', email:'msantos@school.edu.ph'},
+  {name:'Mrs. Bautista', id:'F-0044', role:'Faculty', dept:'Admin', email:'bautista@school.edu.ph'},
+  {name:'Coach Dizon', id:'F-0012', role:'Faculty', dept:'PE', email:'dizon@school.edu.ph'},
+  {name:'R. Aquino', id:'T-002', role:'Admin', dept:'Maintenance', email:'aquino@school.edu.ph'},
+];
+const notifications = [
+  {text:'Your ticket FX-1041 moved to Under review.', time:'20 min ago', unread:true},
+  {text:'FX-1042 was marked Critical and assigned to R. Aquino.', time:'2h ago', unread:true},
+  {text:'FX-1029 was marked Resolved — rate the repair.', time:'1 week ago', unread:false},
+];
+
+/* ===================== STATE ===================== */
+let currentRole = 'student';
+let authRole = 'student';      // which form is showing inside the modal: student | faculty
+let adminMode = false;          // true only when opened via the staff/admin portal link
+let currentUser = {name:'Juan Dela Cruz', id:'2023-04521', email:'jdelacruz@school.edu.ph'};
+let activeStatusFilter = 'all';
+let activePriorityFilter = 'all';
+let searchQuery = '';
+
+const idLabel = {student:'Student ID', faculty:'Faculty / Employee ID', admin:'Admin username'};
+const statusLabel = {pending:'Pending', review:'Under review', progress:'In progress', resolved:'Resolved'};
+const statuses = ['pending','review','progress','resolved'];
+const statusColor = {pending:'var(--pending)', review:'var(--info)', progress:'var(--warning)', resolved:'var(--success)'};
+
+/* ===================== AUTH ===================== */
+// entry: 'signin' | 'signup' | 'admin'
+function openAuth(entry){
+  adminMode = (entry === 'admin');
+  document.getElementById('authOverlay').classList.remove('hidden');
+
+  if(adminMode){
+    document.getElementById('authRoleTag').textContent = 'STAFF & ADMIN PORTAL';
+    document.getElementById('roleToggle').classList.add('hidden');
+    document.getElementById('authSwitch').classList.add('hidden');
+    document.getElementById('tabSignup').style.display = 'none';
+    document.getElementById('signinEmailLabel').textContent = 'Admin username or email';
+    document.getElementById('signinEmail').placeholder = 'admin@school.edu.ph';
+    document.getElementById('signinFoot').innerHTML = 'Admin accounts are pre-built by the school — there\'s no public sign-up.';
+    setAuthTab('signin');
+  } else {
+    document.getElementById('authRoleTag').textContent = 'GET STARTED';
+    document.getElementById('roleToggle').classList.remove('hidden');
+    document.getElementById('authSwitch').classList.remove('hidden');
+    document.getElementById('tabSignup').style.display = 'inline-block';
+    document.getElementById('signinEmailLabel').textContent = 'School email';
+    document.getElementById('signinEmail').placeholder = 'you@school.edu.ph';
+    document.getElementById('signinFoot').innerHTML = 'Forgot your password? <a>Reset it</a>';
+    setAuthRole('student');
+    setAuthTab(entry === 'signin' ? 'signin' : 'signup');
+  }
+}
+function closeAuth(){ document.getElementById('authOverlay').classList.add('hidden'); }
+
+function setAuthRole(role){
+  authRole = role;
+  document.querySelectorAll('.role-toggle-btn').forEach(b=>b.classList.toggle('active', b.dataset.role===role));
+  document.getElementById('signupStudent').classList.toggle('hidden', role!=='student');
+  document.getElementById('signupFaculty').classList.toggle('hidden', role!=='faculty');
+}
+function setAuthTab(tab){
+  document.getElementById('tabSignin').classList.toggle('active', tab==='signin');
+  document.getElementById('tabSignup').classList.toggle('active', tab==='signup');
+  document.getElementById('signinForm').classList.toggle('hidden', tab!=='signin');
+  const showSignup = tab==='signup' && !adminMode;
+  document.getElementById('signupStudent').classList.toggle('hidden', !(showSignup && authRole==='student'));
+  document.getElementById('signupFaculty').classList.toggle('hidden', !(showSignup && authRole==='faculty'));
+}
+function handleIdPhoto(input){
+  const box = document.getElementById('idUploadLabel').parentElement;
+  const label = document.getElementById('idUploadLabel');
+  if(input.files && input.files[0]){
+    box.classList.add('has-file');
+    label.textContent = '✓ ' + input.files[0].name + ' — ready for review';
+  }
+}
+function enterApp(){
+  currentRole = adminMode ? 'admin' : authRole;
+  closeAuth();
+  document.getElementById('view-landing').style.display = 'none';
+  document.getElementById('appShell').classList.add('show');
+  if(currentRole==='admin') currentUser = {name:'R. Aquino', id:'T-002', email:'aquino@school.edu.ph'};
+  else if(currentRole==='faculty') currentUser = {name:'Mrs. Bautista', id:'F-0044', email:'bautista@school.edu.ph'};
+  else currentUser = {name:'Juan Dela Cruz', id:'2023-04521', email:'jdelacruz@school.edu.ph'};
+  buildNavbar();
+  go('dashboard');
+}
+function signOut(){
+  document.getElementById('appShell').classList.remove('show');
+  document.getElementById('view-landing').style.display = 'block';
+}
+
+/* ===================== NAVBAR ===================== */
+const navConfig = {
+  student: [['dashboard','◧','Dashboard'],['report','✎','New report'],['tickets','📋','My tickets'],['notifications','🔔','Notifications']],
+  faculty: [['dashboard','◧','Dashboard'],['report','✎','New report'],['tickets','📋','Department tickets'],['notifications','🔔','Notifications']],
+  admin: [['dashboard','◧','All reports'],['analytics','📊','Analytics'],['inventory','🗄','Inventory'],['users','👥','Users'],['rooms','🏢','Rooms'],['notifications','🔔','Notifications']]
+};
+function buildNavbar(){
+  const nav = document.getElementById('navLinks');
+  nav.innerHTML = '';
+  navConfig[currentRole].forEach(([key,icon,label])=>{
+    const btn = document.createElement('button');
+    btn.className = 'nav-link'; btn.dataset.page = key;
+    btn.innerHTML = `<span>${icon}</span><span>${label}</span>`;
+    btn.onclick = ()=>go(key);
+    nav.appendChild(btn);
+  });
+  const initials = currentUser.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('topAvatar').textContent = initials;
+  document.getElementById('userName').textContent = currentUser.name;
+  document.getElementById('userRoleLabel').textContent = currentRole==='student'?'Student':currentRole==='faculty'?'Faculty':'Admin';
+}
+
+const pageTitles = {
+  dashboard: {student:['Dashboard',"Welcome back — here's what's happening."], faculty:['Dashboard',"Welcome back — here's what's happening."], admin:['All reports','Every ticket across campus, with live progress.']},
+  report: ['New report','Tell us what\'s broken, missing, or needs attention.'],
+  tickets: ['Tickets','Track every report from submission to resolution.'],
+  notifications: ['Notifications','Everything that needs your attention.'],
+  analytics: ['Analytics','Patterns across buildings, departments, and equipment.'],
+  inventory: ['Inventory','Every tracked item, its room, and its condition.'],
+  users: ['Users','Accounts registered across every role.'],
+  rooms: ['Rooms & buildings','Open tickets and printable QR codes per room.'],
+};
+function go(page){
+  document.querySelectorAll('.nav-link').forEach(el=>el.classList.toggle('active', el.dataset.page===page));
+  let t = pageTitles[page];
+  if(page==='dashboard') t = t[currentRole];
+  document.getElementById('pageTitle').textContent = t[0];
+  document.getElementById('pageSub').textContent = t[1];
+  document.getElementById('pageHeadActions').innerHTML =
+    (page==='dashboard'||page==='tickets') && currentRole!=='admin'
+      ? `<button class="btn ${currentRole==='faculty'?'field':''}" onclick="go('report')">＋ New report</button>` : '';
+  document.getElementById('contentArea').innerHTML = renderPage(page);
+}
+
+/* ===================== HELPERS ===================== */
+function priorityBadge(p){ return `<span class="badge pr-${p}">${p}</span>`; }
+function statusBadgeFn(s){ return `<span class="badge status-${s}">${statusLabel[s]}</span>`; }
+function progressBar(status){
+  const idx = statuses.indexOf(status);
+  return `<div class="progress-wrap">
+    <div class="progress-track">${statuses.map((s,i)=>`<div class="progress-seg ${i<=idx?'filled':''}" style="--seg-color:${statusColor[status]}"></div>`).join('')}</div>
+    <div class="progress-caption">${statusLabel[status]}</div>
+  </div>`;
+}
+function myTickets(){ return tickets.filter(t=>t.reporterId === currentUser.id); }
+function deptTickets(){ return tickets.filter(t=>t.dept === 'Science' || t.reporterId === currentUser.id); }
+
+function ticketSlip(t){
+  return `<div class="ticket-slip" onclick="openTicket('${t.id}')">
+    <div class="t-id">${t.id}</div>
+    <div class="t-main"><div class="t-title">${t.title}</div><div class="t-meta">${t.room} · ${t.dept} · ${t.created}${currentRole!=='student' ? ' · '+t.reporter : ''}</div></div>
+    ${priorityBadge(t.priority)}
+    ${progressBar(t.status)}
+  </div>`;
+}
+function reportRow(t){
+  return `<div class="report-row" onclick="openTicket('${t.id}')">
+    <div class="r-id">${t.id}</div>
+    <div class="r-main"><div class="r-title">${t.title}</div><div class="r-meta">${t.room} · ${t.dept} · reported by ${t.reporter} · ${t.created}</div></div>
+    ${priorityBadge(t.priority)}
+    ${progressBar(t.status)}
+    <div class="r-tech"><span class="r-tech-label">Technician</span>${t.tech}</div>
+    <div class="r-arrow">›</div>
+  </div>`;
+}
+function emptyState(title, sub){
+  return `<div class="card empty"><div class="t">${title}</div><div class="s">${sub}</div></div>`;
+}
+function filteredTickets(source){
+  return source.filter(t =>
+    (activeStatusFilter==='all' || t.status===activeStatusFilter) &&
+    (activePriorityFilter==='all' || t.priority===activePriorityFilter) &&
+    (searchQuery==='' || (t.title+t.room+t.reporter+t.id).toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+}
+
+/* ===================== PAGE RENDERERS ===================== */
+function renderPage(page){
+  if(page==='dashboard') return currentRole==='admin' ? renderAdminDashboard() : renderUserDashboard();
+  if(page==='report') return renderReportForm();
+  if(page==='tickets') return renderTicketsPage();
+  if(page==='notifications') return renderNotifications();
+  if(page==='analytics') return renderAnalytics();
+  if(page==='inventory') return renderInventory();
+  if(page==='users') return renderUsers();
+  if(page==='rooms') return renderRooms();
+  return '';
+}
+
+/* ---- Student / Faculty dashboard ---- */
+function renderUserDashboard(){
+  const mine = currentRole==='student' ? myTickets() : deptTickets();
+  const open = mine.filter(t=>t.status!=='resolved').length;
+  const resolved = mine.filter(t=>t.status==='resolved').length;
+  return `
+  <div class="grid-4">
+    <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Open reports</span><span class="kpi-icon" style="background:var(--primary-light);color:var(--primary);">◧</span></div><div class="num">${open}</div><div class="delta">Across ${mine.length} total</div></div>
+    <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Resolved</span><span class="kpi-icon" style="background:var(--success-bg);color:var(--success);">✓</span></div><div class="num">${resolved}</div><div class="delta up">This term</div></div>
+    <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Critical open</span><span class="kpi-icon" style="background:var(--danger-bg);color:var(--danger);">!</span></div><div class="num">${mine.filter(t=>t.priority==='critical'&&t.status!=='resolved').length}</div><div class="delta warn">Needs attention</div></div>
+    <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Avg. response</span><span class="kpi-icon" style="background:var(--info-bg);color:var(--info);">⏱</span></div><div class="num">1.8d</div><div class="delta">Last 5 reports</div></div>
+  </div>
+  <div class="section-title"><h2>${currentRole==='faculty' ? 'Department tickets' : 'Your recent reports'}</h2></div>
+  ${mine.slice(0,5).map(ticketSlip).join('') || emptyState('No reports yet','Submit your first facility report to see it here.')}
+  `;
+}
+
+/* ---- Admin dashboard: ALL REPORTS with progress (main differentiator) ---- */
+function renderAdminDashboard(){
+  const open = tickets.filter(t=>t.status!=='resolved').length;
+  const critical = tickets.filter(t=>t.priority==='critical'&&t.status!=='resolved');
+  const list = filteredTickets(tickets);
+  return `
+  ${critical.length ? `<div class="dup-warning show" style="margin-bottom:20px;">⚠ ${critical.length} critical ticket${critical.length>1?'s':''} still open — ${critical.map(t=>t.id).join(', ')}.</div>` : ''}
+  <div class="grid-4">
+    <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Total reports</span><span class="kpi-icon" style="background:var(--primary-light);color:var(--primary);">◧</span></div><div class="num">${tickets.length}</div><div class="delta">All time</div></div>
+    <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Open</span><span class="kpi-icon" style="background:var(--warning-bg);color:var(--warning);">◔</span></div><div class="num">${open}</div><div class="delta">Needs action</div></div>
+    <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Resolved this term</span><span class="kpi-icon" style="background:var(--success-bg);color:var(--success);">✓</span></div><div class="num">231</div><div class="delta up">+18 this week</div></div>
+    <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Avg. resolution</span><span class="kpi-icon" style="background:var(--info-bg);color:var(--info);">⏱</span></div><div class="num">2.4d</div><div class="delta up">−0.3d vs last month</div></div>
+  </div>
+
+  <div class="section-title"><h2>All reports</h2></div>
+  <div class="filters">
+    <input class="search-input" placeholder="Search by ticket, room, or reporter..." oninput="setSearch(this.value)" value="${searchQuery}">
+    ${['all','pending','review','progress','resolved'].map(s=>`<button class="filter-chip ${activeStatusFilter===s?'active':''}" onclick="setStatusFilter('${s}')">${s==='all'?'All statuses':statusLabel[s]}</button>`).join('')}
+    <div class="filters-right">
+      ${['all','critical','high','medium','low'].map(p=>`<button class="filter-chip ${activePriorityFilter===p?'active':''}" onclick="setPriorityFilter('${p}')">${p==='all'?'All priorities':p}</button>`).join('')}
+    </div>
+  </div>
+  ${list.map(reportRow).join('') || emptyState('No reports match these filters','Try clearing a filter or searching a different term.')}
+  `;
+}
+function setSearch(v){ searchQuery = v; go('dashboard'); }
+function setStatusFilter(s){ activeStatusFilter = s; go('dashboard'); }
+function setPriorityFilter(p){ activePriorityFilter = p; go('dashboard'); }
+
+/* ---- Report form ---- */
+function renderReportForm(){
+  return `
+  <div class="card form-card">
+    <div class="verify-box">Confirm your ${idLabel[currentRole==='admin'?'faculty':currentRole]} below — this is required on every report, even though you're signed in.</div>
+    <div class="form-row">
+      <div class="field-group"><label>${idLabel[currentRole==='admin'?'faculty':currentRole]}</label><input type="text" value="${currentUser.id}"></div>
+      <div class="field-group"><label>School email</label><input type="email" value="${currentUser.email}"></div>
+    </div>
+    <div class="form-row">
+      <div class="field-group"><label>Building</label><select><option>Main Building</option><option>Tech Wing</option><option>Annex</option></select></div>
+      <div class="field-group"><label>Room</label><select id="roomSelect" onchange="checkDuplicates()"><option>Room 101</option><option>Room 204</option><option>Library</option><option>Faculty Lounge</option></select></div>
+    </div>
+    <div class="field-group"><label>What's the issue?</label><input type="text" placeholder="e.g. Aircon leaking, chair broken, projector won't turn on"></div>
+    <div class="field-group"><label>Describe it</label><textarea rows="3" placeholder="Add any detail that helps — when it started, how bad it is..."></textarea></div>
+    <div class="field-group"><label>Priority</label>
+      <div class="priority-select">${['low','medium','high','critical'].map(p=>`<div class="priority-opt sel-${p} ${p==='medium'?'selected':''}" onclick="setPriority(this)">${p}</div>`).join('')}</div>
+    </div>
+    <div class="field-group"><label>Photo (optional)</label><div class="upload-box">Drop a photo here, or click to upload</div></div>
+    <div class="dup-warning" id="dupWarning">⚠ 3 similar reports already open for this room. Submitting anyway will still create a new ticket.</div>
+    <button class="btn ${currentRole==='faculty'?'field':''}" style="margin-top:18px;width:100%;justify-content:center;" onclick="submitReport()">Submit report</button>
+  </div>`;
+}
+function setPriority(el){ el.parentElement.querySelectorAll('.priority-opt').forEach(x=>x.classList.remove('selected')); el.classList.add('selected'); }
+function checkDuplicates(){ document.getElementById('dupWarning').classList.toggle('show', document.getElementById('roomSelect').value === 'Room 204'); }
+function submitReport(){ alert('Report submitted — ticket FX-1043 created and routed to the maintenance queue.'); go('tickets'); }
+
+/* ---- Tickets page (student / faculty) ---- */
+function renderTicketsPage(){
+  const source = currentRole==='student' ? myTickets() : deptTickets();
+  const list = filteredTickets(source);
+  return `
+  <div class="filters">
+    <input class="search-input" placeholder="Search tickets..." oninput="setSearch(this.value)" value="${searchQuery}">
+    ${['all','pending','review','progress','resolved'].map(s=>`<button class="filter-chip ${activeStatusFilter===s?'active':''}" onclick="setStatusFilter2('${s}')">${s==='all'?'All':statusLabel[s]}</button>`).join('')}
+  </div>
+  ${list.map(ticketSlip).join('') || emptyState('No tickets match this filter','Try a different status.')}
+  `;
+}
+function setStatusFilter2(s){ activeStatusFilter = s; go('tickets'); }
+
+/* ---- Ticket side panel ---- */
+function openTicket(id){
+  const t = tickets.find(x=>x.id===id);
+  const idx = statuses.indexOf(t.status);
+  document.getElementById('sidePanel').innerHTML = `
+    <button class="side-close" onclick="closeSidePanel()">✕</button>
+    <div style="font-size:12px;color:var(--muted);font-weight:600;">${t.id}</div>
+    <h2 style="font-size:20px;margin-top:6px;">${t.title}</h2>
+    <div style="margin-top:8px;display:flex;gap:8px;">${statusBadgeFn(t.status)}${priorityBadge(t.priority)}</div>
+    <p style="font-size:13.5px;color:var(--text-soft);margin-top:14px;line-height:1.6;">${t.desc}</p>
+    <div style="font-size:12.5px;color:var(--muted);margin-top:10px;">${t.room} · ${t.dept}<br>Reported by ${t.reporter} (${t.reporterId})<br>${t.created}</div>
+    <div class="side-block"><label>Status</label>
+      <div class="status-track">${statuses.map((s,i)=>`<div class="status-step ${i<=idx?'done':''}">${statusLabel[s]}</div>`).join('')}</div>
+      ${currentRole==='admin' ? `<div style="margin-top:12px;display:flex;gap:8px;">
+        <select style="flex:1;padding:9px;border:1px solid var(--border);border-radius:9px;">${statuses.map(s=>`<option ${s===t.status?'selected':''}>${statusLabel[s]}</option>`).join('')}</select>
+        <button class="btn sm" onclick="alert('Status updated — ${t.reporter} notified.')">Update</button></div>` : ''}
+    </div>
+    ${currentRole==='admin' ? `<div class="side-block"><label>Technician assignment</label>
+      <select style="width:100%;padding:9px;border:1px solid var(--border);border-radius:9px;"><option>${t.tech}</option><option>R. Aquino</option><option>L. Ferrer</option><option>Unassigned</option></select></div>`
+      : `<div class="side-block"><label>Assigned technician</label><div style="font-size:13.5px;">${t.tech}</div></div>`}
+    <div class="side-block"><label>Comments</label>
+      <div class="comment"><b>${t.tech !== 'Unassigned' ? t.tech : 'Admin'}</b>On it — checking the unit this afternoon.</div>
+      <div class="comment"><b>${t.reporter}</b>Thank you, it's gotten worse since this morning.</div>
+      <div class="comment-input"><input type="text" placeholder="Add a comment..."><button class="btn ghost sm">Send</button></div>
+    </div>
+    ${t.status==='resolved' ? `<div class="side-block"><label>Feedback</label><div class="stars">★★★★☆</div><div style="font-size:12.5px;color:var(--muted);margin-top:6px;">"Fixed quickly, thanks!" — ${t.reporter}</div></div>` : ''}
+    <div class="side-block"><label>Activity log</label>
+      <div style="font-size:12px;color:var(--muted);line-height:2;">${t.created} — Ticket created by ${t.reporter}<br>${t.tech!=='Unassigned' ? `Assigned to ${t.tech}<br>` : ''}Status set to "${statusLabel[t.status]}"</div>
+    </div>
+  `;
+  document.getElementById('sideOverlay').classList.add('show');
+}
+function closeSidePanel(){ document.getElementById('sideOverlay').classList.remove('show'); }
+
+/* ---- Notifications ---- */
+function renderNotifications(){
+  return `<div class="card" style="overflow:hidden;">${notifications.map(n=>`
+    <div class="notif-item ${n.unread?'unread':''}">
+      <div class="notif-dot" style="background:${n.unread?'var(--primary)':'transparent'};"></div>
+      <div><div class="notif-text">${n.text}</div><div class="notif-time">${n.time}</div></div>
+    </div>`).join('')}</div>`;
+}
+
+/* ---- Analytics (admin) ---- */
+function renderAnalytics(){
+  const months = [['Apr',12,9],['May',15,14],['Jun',9,11],['Jul',18,16],['Aug',22,20],['Sep',14,10]];
+  const maxV = 24;
+  return `
+  <div class="grid-2">
+    <div class="card" style="padding:22px;">
+      <div class="kpi-label" style="margin-bottom:6px;">Open vs resolved · last 6 months</div>
+      <div class="barchart">${months.map(([m,open,res])=>`
+        <div class="bar-col"><div style="display:flex;gap:3px;align-items:flex-end;height:100%;width:100%;">
+          <div class="bar" style="height:${open/maxV*100}%;background:var(--warning);flex:1;"></div>
+          <div class="bar" style="height:${res/maxV*100}%;background:var(--success);flex:1;"></div>
+        </div><div class="bar-label">${m}</div></div>`).join('')}
+      </div>
+      <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--muted);">
+        <span><span style="display:inline-block;width:9px;height:9px;background:var(--warning);border-radius:2px;margin-right:5px;"></span>Opened</span>
+        <span><span style="display:inline-block;width:9px;height:9px;background:var(--success);border-radius:2px;margin-right:5px;"></span>Resolved</span>
+      </div>
+    </div>
+    <div class="card" style="padding:22px;">
+      <div class="kpi-label" style="margin-bottom:14px;">Priority breakdown</div>
+      ${[['Critical',8,'var(--danger)'],['High',19,'var(--warning)'],['Medium',34,'var(--info)'],['Low',22,'var(--pending)']].map(([label,pct,color])=>`
+        <div class="hbar-row"><div class="hbar-label">${label}</div><div class="hbar-track"><div class="hbar-fill" style="width:${pct*2}%;background:${color};"></div></div><div class="hbar-num">${pct}%</div></div>`).join('')}
+    </div>
+  </div>
+  <div class="grid-2" style="margin-top:20px;">
+    <div class="card" style="padding:22px;">
+      <div class="kpi-label" style="margin-bottom:14px;">Most reported items</div>
+      ${[['Chairs',31],['Aircon units',24],['Projectors',18],['Lab PCs',14],['Lighting',11]].map(([n,c])=>`
+        <div class="hbar-row"><div class="hbar-label">${n}</div><div class="hbar-track"><div class="hbar-fill" style="width:${c*3}%"></div></div><div class="hbar-num">${c}</div></div>`).join('')}
+    </div>
+    <div class="card" style="padding:22px;">
+      <div class="kpi-label" style="margin-bottom:14px;">Avg. resolution time by department</div>
+      ${[['Science','3.1d',62],['ICT','1.4d',28],['PE','2.0d',40],['Admin','1.1d',22],['General','2.6d',52]].map(([d,t,pct])=>`
+        <div class="hbar-row"><div class="hbar-label">${d}</div><div class="hbar-track"><div class="hbar-fill" style="width:${pct}%;background:var(--success);"></div></div><div class="hbar-num">${t}</div></div>`).join('')}
+    </div>
+  </div>`;
+}
+
+/* ---- Inventory ---- */
+function renderInventory(){
+  return `<div class="table-wrap"><table>
+    <thead><tr><th>Item</th><th>Category</th><th>Room</th><th>Condition</th><th></th></tr></thead>
+    <tbody>${equipment.map(e=>`<tr><td>${e.name}</td><td>${e.category}</td><td>${e.room}</td><td><span class="cond-${e.cond}">${e.cond}</span></td><td><a style="font-size:12.5px;text-decoration:underline;cursor:pointer;color:var(--primary);">Repair log</a></td></tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+/* ---- Users ---- */
+function renderUsers(){
+  return `
+  <div class="filters"><button class="filter-chip active">All</button><button class="filter-chip">Students</button><button class="filter-chip">Faculty</button><button class="filter-chip">Admin</button></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Name</th><th>Role</th><th>ID</th><th>Department</th><th>Email</th></tr></thead>
+    <tbody>${usersList.map(u=>`<tr><td>${u.name}</td><td>${u.role}</td><td>${u.id}</td><td>${u.dept}</td><td>${u.email}</td></tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+/* ---- Rooms ---- */
+function renderRooms(){
+  return `<div class="grid-3">${rooms.map(r=>`
+    <div class="card room-card">
+      <div class="room-row"><div><div class="room-title">${r.name}</div><div class="room-meta">${r.building} · ${r.dept}</div></div><div class="qr-box" title="Printable QR"></div></div>
+      <div style="font-size:12.5px;color:${r.open?'var(--danger)':'var(--success)'};font-weight:700;">${r.open} open ticket${r.open!==1?'s':''}</div>
+      <button class="btn ghost sm">Print QR label</button>
+    </div>`).join('')}</div>`;
+}
+</script>
+</body>
+</html>
