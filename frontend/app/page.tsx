@@ -11,9 +11,18 @@ const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffec
 
 type Role = "student" | "faculty" | "admin";
 type Status = "pending" | "review" | "progress" | "resolved";
+const collegeDepartments = ["CITE", "CAS", "CAHS", "CELA", "CEA", "CMA", "CHTM", "CCJE", "SHS"] as const;
+const reportBuildings = ["CMA BUILDING", "PTC BUILDING", "RIVER SIDE BUILDING", "MDA HALL BUILDING", "BASIC ED BUILDING", "CHS BUILDING", "NORTH HALL BUILDING", "ITS CSDL BUILDING", "GYM"] as const;
+function getBuildingFloorCount(building: string) {
+  if (building === "RIVER SIDE BUILDING") return 8;
+  if (building === "MDA HALL BUILDING" || building === "MBA HALL BUILDING") return 5;
+  if (building === "ITS CSDL BUILDING") return 2;
+  if (building === "GYM") return 1;
+  return 4;
+}
 type Ticket = {
   id: string; title: string; room: string; reporter: string; dept: string;
-  priority: "low" | "medium" | "high" | "critical"; status: Status; created: string; tech: string;
+  priority: "low" | "medium" | "high" | "critical"; status: Status; created: string; createdAt: number; tech: string; description: string;
 };
 
 type IconName = "spark" | "clipboard" | "activity" | "qr" | "chart" | "alert" | "box" | "mail" | "hash" | "search" | "id" | "shield" | "arrow" | "check" | "bell" | "grid" | "layers" | "users" | "building" | "edit" | "logout";
@@ -114,7 +123,11 @@ function Reveal({ children, className = "" }: { children: React.ReactNode; class
   return <div className={`gsap-reveal ${className}`}>{children}</div>;
 }
 
-const tickets: Ticket[] = [];
+const tickets: Ticket[] = [
+  { id: "FX-1042", title: "Aircon leaking onto floor", room: "Room 204", reporter: "Juan Dela Cruz", dept: "Science", priority: "critical", status: "progress", created: "Today, 9:42 AM", createdAt: 3, tech: "R. Aquino", description: "Water is dripping from the air-conditioning unit near the front row and making the floor slippery." },
+  { id: "FX-1041", title: "Broken window latch", room: "Room 101", reporter: "Juan Dela Cruz", dept: "General", priority: "medium", status: "review", created: "Yesterday, 2:18 PM", createdAt: 2, tech: "Maintenance queue", description: "The left window latch no longer locks properly and needs to be checked for safety." },
+  { id: "FX-1029", title: "Projector bulb replacement", room: "Computer Lab 2", reporter: "Juan Dela Cruz", dept: "Technology", priority: "low", status: "resolved", created: "September 8, 2026", createdAt: 1, tech: "R. Aquino", description: "The projector was too dim for presentations. The bulb was replaced and tested." }
+];
 
 const statusLabel: Record<Status, string> = { pending: "Pending", review: "Under review", progress: "In progress", resolved: "Resolved" };
 
@@ -483,7 +496,10 @@ function AppShell({ role, onSignOut }: { role: Role; onSignOut: () => void }) {
   const [query, setQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const headerRef = useRef<HTMLElement>(null);
   const nav = role === "admin" ? ["All reports", "Analytics", "Inventory", "Users", "Rooms", "Notifications"] : ["Dashboard", "New report", role === "faculty" ? "Department tickets" : "My tickets", "Notifications"];
   const visible = useMemo(() => tickets.filter((t) => (statusFilter === "all" || t.status === statusFilter) && `${t.id} ${t.title} ${t.room} ${t.reporter}`.toLowerCase().includes(query.toLowerCase())), [query, statusFilter]);
   const searchResults = useMemo(() => {
@@ -499,6 +515,29 @@ function AppShell({ role, onSignOut }: { role: Role; onSignOut: () => void }) {
     const savedHistory = window.localStorage.getItem("fixko-search-history");
     if (savedHistory) setSearchHistory(JSON.parse(savedHistory));
   }, []);
+  useEffect(() => {
+    const closeMenus = (event: MouseEvent) => {
+      if (headerRef.current && !headerRef.current.contains(event.target as Node)) {
+        setSearchOpen(false);
+        setProfileOpen(false);
+        setNotificationsOpen(false);
+      }
+    };
+    const closeWithEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSearchOpen(false);
+        setProfileOpen(false);
+        setNotificationsOpen(false);
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", closeMenus);
+    document.addEventListener("keydown", closeWithEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeMenus);
+      document.removeEventListener("keydown", closeWithEscape);
+    };
+  }, []);
   const saveSearch = (value: string) => {
     const term = value.trim();
     if (!term) return;
@@ -506,55 +545,155 @@ function AppShell({ role, onSignOut }: { role: Role; onSignOut: () => void }) {
     setSearchHistory(nextHistory);
     window.localStorage.setItem("fixko-search-history", JSON.stringify(nextHistory));
   };
-  const choosePage = (item: string) => { setPage(item); setMobileMenuOpen(false); };
+  const choosePage = (item: string) => {
+    setPage(item);
+    setMobileMenuOpen(false);
+    setSearchOpen(false);
+    setProfileOpen(false);
+    setNotificationsOpen(false);
+  };
   const displayRole = role === "faculty" ? "Faculty / Teacher" : role;
   const accountLabel = role === "admin" ? "Admin account" : role === "faculty" ? "Faculty account" : "Student account";
   const accountInitials = role === "admin" ? "AD" : role === "faculty" ? "FC" : "ST";
   return <div className="app-shell min-h-screen">
-    <header className="app-header site-nav sticky top-0 z-30 border-b border-slate-200/80 bg-white/85 backdrop-blur">
+    <header ref={headerRef} className="app-header site-nav sticky top-0 z-30 border-b border-slate-200/80 bg-white/85 backdrop-blur">
       <div className="mx-auto flex min-h-[70px] w-full max-w-[1700px] items-center gap-4 px-5 lg:px-10">
         <a className="nav-brand flex items-center gap-2" href="#" onClick={() => choosePage(role === "admin" ? "All reports" : "Dashboard")}><span className="brand-shell"><span className="brand-mark-modern">FX</span><span className="nav-live-orb" /></span><strong className="text-lg">Fixko</strong></a>
         <div className={`app-nav-links nav-links-modern ${mobileMenuOpen ? "open" : ""}`}>{nav.map(item => <button key={item} onClick={() => choosePage(item)} className={`nav-link-modern ${page === item ? "active" : ""}`}>{item}<span className="nav-link-glow" /></button>)}</div>
         <div className="app-search-wrap">
           <div className={`app-search ${searchOpen ? "is-open" : ""}`}><Icon name="search" size={17} /><input value={query} onFocus={() => setSearchOpen(true)} onChange={event => { setQuery(event.target.value); setSearchOpen(true); }} onKeyDown={event => { if (event.key === "Enter") saveSearch(query); if (event.key === "Escape") { setSearchOpen(false); event.currentTarget.blur(); } }} placeholder="Search tickets and workspaces" aria-label="Search tickets and workspaces" /></div>
-          {searchOpen && <><button className="app-search-dismiss" aria-label="Close search" onClick={() => setSearchOpen(false)} /><div className="app-search-panel">{query.trim() ? searchResults.length ? <><p className="app-search-heading">Search results</p>{searchResults.map(result => <button className="app-search-result" key={`${result.type}-${result.label}`} onClick={() => { saveSearch(query); if (result.type === "Workspace") choosePage(result.label); setSearchOpen(false); }}><span className="app-search-result-icon">{result.type === "Ticket" ? <Icon name="clipboard" size={15} /> : <Icon name="grid" size={15} />}</span><span><strong>{result.label}</strong><small>{result.detail}</small></span><em>{result.type}</em></button>)}</> : <p className="app-search-empty">No tickets or workspaces found.</p> : searchHistory.length ? <><p className="app-search-heading">Recent searches</p>{searchHistory.map(item => <button className="app-search-result" key={item} onClick={() => setQuery(item)}><span className="app-search-result-icon"><Icon name="activity" size={15} /></span><span><strong>{item}</strong><small>Previous search</small></span><em>History</em></button>)}</> : <p className="app-search-empty">Your recent searches will appear here.</p>}</div></>}
+          <div className={`app-search-panel ${searchOpen ? "is-open" : ""}`}>{query.trim() ? searchResults.length ? <><p className="app-search-heading">Search results</p>{searchResults.map(result => <button className="app-search-result" key={`${result.type}-${result.label}`} onClick={() => { saveSearch(query); if (result.type === "Workspace") choosePage(result.label); setSearchOpen(false); }}><span className="app-search-result-icon">{result.type === "Ticket" ? <Icon name="clipboard" size={15} /> : <Icon name="grid" size={15} />}</span><span><strong>{result.label}</strong><small>{result.detail}</small></span><em>{result.type}</em></button>)}</> : <p className="app-search-empty">No tickets or workspaces found.</p> : searchHistory.length ? <><p className="app-search-heading">Recent searches</p>{searchHistory.map(item => <button className="app-search-result" key={item} onClick={() => setQuery(item)}><span className="app-search-result-icon"><Icon name="activity" size={15} /></span><span><strong>{item}</strong><small>Previous search</small></span><em>History</em></button>)}</> : <p className="app-search-empty">Your recent searches will appear here.</p>}</div>
         </div>
-        <div className="ml-auto flex items-center gap-3">
-          <button onClick={() => choosePage("Notifications")} className="app-notification relative text-slate-500" aria-label="Open notifications"><Icon name="bell" size={18} /><span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-rose-500" /></button>
-          <div className="app-profile hidden items-center gap-2 sm:flex"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">{accountInitials}</div><div className="hidden text-right xl:block"><strong className="block text-xs">{accountLabel}</strong><small className="text-[11px] text-slate-400">{displayRole}</small></div></div>
-          <button onClick={onSignOut} className="app-signout text-slate-400 hover:text-rose-500" aria-label="Sign out"><Icon name="logout" size={18} /></button>
+        <div className="app-header-actions ml-auto flex items-center gap-2">
+        <div className="app-header-menu">
+          <button onClick={() => { setNotificationsOpen(open => !open); setProfileOpen(false); setSearchOpen(false); }} className={`app-notification relative text-slate-500 ${notificationsOpen ? "is-open" : ""}`} aria-label="Open notifications" aria-expanded={notificationsOpen}><Icon name="bell" size={18} /></button>
+          <div className={`app-dropdown app-notification-dropdown ${notificationsOpen ? "is-open" : ""}`}><div className="app-dropdown-heading"><span><strong>Notifications</strong><small>Stay up to date with your campus</small></span><span className="app-dropdown-live">LIVE</span></div><div className="app-dropdown-empty"><span><Icon name="bell" size={17} /></span><strong>You're all caught up</strong><small>New updates will appear here.</small></div><button className="app-dropdown-link" onClick={() => choosePage("Notifications")}>View all notifications <Icon name="arrow" size={14} /></button></div>
+        </div>
+        <div className="app-header-menu hidden sm:block">
+        <button onClick={() => { setProfileOpen(open => !open); setNotificationsOpen(false); setSearchOpen(false); }} className={`app-profile items-center gap-2 ${profileOpen ? "is-open" : ""}`} aria-label="Open profile menu" aria-expanded={profileOpen}>
+          <div className="app-profile-avatar">{accountInitials}<span className="app-profile-status" /></div>
+          <div className="app-profile-copy hidden text-left xl:block"><span className="app-profile-kicker">SIGNED IN AS</span><strong>{accountLabel}</strong><small>{displayRole} <i>|</i> Active now</small></div>
+          <span className="app-profile-chevron hidden xl:block" aria-hidden="true" />
+        </button>
+        <div className={`app-dropdown app-profile-dropdown ${profileOpen ? "is-open" : ""}`}><div className="app-dropdown-profile"><div className="app-profile-avatar">{accountInitials}</div><div><strong>{accountLabel}</strong><small>{displayRole}</small></div></div><div className="app-dropdown-divider" /><button className="app-dropdown-action" onClick={onSignOut}><Icon name="logout" size={16} /> Sign out</button></div>
+        </div>
           <button className="nav-menu-button" aria-label="Toggle navigation" aria-expanded={mobileMenuOpen} onClick={() => setMobileMenuOpen((open) => !open)}><span /><span /><span /></button>
         </div>
       </div>
     </header>
-    <main className="app-main w-full p-5 lg:p-9"><div className="mx-auto max-w-[1500px]"><div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><h1 className="text-3xl font-black">{page}</h1><p className="mt-1 text-sm text-slate-500">{role === "admin" ? "Every ticket across campus, with live progress." : "Welcome back — here's what's happening."}</p></div>{role !== "admin" && <button onClick={() => choosePage("New report")} className="btn-primary"><Icon name="edit" size={16} /> New report</button>}</div><motion.div key={page} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .38, ease: [.2, .8, .2, 1] }}>{page === "New report" ? <ReportForm onSubmitted={() => choosePage(role === "faculty" ? "Department tickets" : "My tickets")} /> : page === "Analytics" ? <Analytics /> : page === "Inventory" ? <Inventory /> : page === "Users" ? <Users /> : page === "Rooms" ? <Rooms /> : page === "Notifications" ? <Notifications /> : role === "student" ? <StudentDashboard onNewReport={() => choosePage("New report")} onViewTickets={() => choosePage("My tickets")} /> : <><div className="mb-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{[["Open reports", String(open)],["Resolved", "0"],["Critical open", "0"],["Avg. response", "—"]].map(([label, value]) => <div className="kpi-modern card p-5" key={label}><span className="text-xs font-bold uppercase tracking-wider text-slate-400">{label}</span><strong className="mt-3 block text-3xl">{value}</strong><small className="mt-1 block text-xs text-slate-400">No live data yet</small></div>)}</div><div className="card overflow-hidden"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-5"><h2 className="font-extrabold">{role === "admin" ? "All reports" : "Department tickets"}</h2><div className="flex gap-2"><input value={query} onChange={e => setQuery(e.target.value)} className="w-48 rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="Search tickets..." /><select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm"><option value="all">All status</option>{Object.entries(statusLabel).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></div></div>{visible.length ? <div className="divide-y divide-slate-100">{visible.map(t => <div key={t.id} className="ticket-row grid gap-3 p-5 transition hover:bg-slate-50 lg:grid-cols-[80px_1fr_100px_130px] lg:items-center"><span className="text-xs font-black text-indigo-600">{t.id}</span><div><strong className="block text-sm">{t.title}</strong><small className="text-xs text-slate-400">{t.room} · {t.dept} · {t.created}{role === "faculty" || role === "admin" ? ` · ${t.reporter}` : ""}</small></div><Badge value={t.priority} /><div><Badge value={t.status} type="status" /><small className="mt-2 block text-xs text-slate-400">{t.tech}</small></div></div>)}</div> : <div className="empty-ticket-state"><span><Icon name="clipboard" size={22} /></span><h3>No tickets yet</h3><p>New reports will appear here once they are submitted.</p>{role !== "admin" && <button onClick={() => choosePage("New report")} className="btn-primary">Create a report <Icon name="arrow" size={14} /></button>}</div>}</div></>}</motion.div><footer className="app-footer"><div className="app-footer-brand"><span className="brand-mark-modern">FX</span><div><strong>Fixko</strong><p>Small reports. Faster fixes. Better campus spaces.</p></div></div><div className="app-footer-links"><button onClick={() => choosePage("Notifications")}>Updates <span>→</span></button><button onClick={() => choosePage("New report")}>Report an issue <span>→</span></button><a href="mailto:support@fixko.school">Support <span>→</span></a></div><div className="app-footer-bottom"><span>{role === "admin" ? "Campus operations workspace" : role === "faculty" ? "Helping your department stay on track" : "Every report helps improve your campus"}</span><span>© 2026 Fixko · Trusted school communities</span></div></footer></div></main>
+    <main className="app-main w-full p-5 lg:p-9"><div className="mx-auto max-w-[1500px]"><motion.div key={page} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .38, ease: [.2, .8, .2, 1] }}>{page === "New report" ? <ReportForm onSubmitted={() => choosePage(role === "faculty" ? "Department tickets" : "My tickets")} /> : page === "My tickets" ? <MyTickets /> : page === "Analytics" ? <Analytics /> : page === "Inventory" ? <Inventory /> : page === "Users" ? <Users /> : page === "Rooms" ? <Rooms /> : page === "Notifications" ? <Notifications /> : role === "student" ? <StudentDashboard onNewReport={() => choosePage("New report")} onViewTickets={() => choosePage("My tickets")} /> : <>{role === "faculty" && <ReportSummary />}<div className="mb-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{[["Open reports", String(open)],["Resolved", "0"],["Critical open", "0"],["Avg. response", "—"]].map(([label, value]) => <div className="kpi-modern card p-5" key={label}><span className="text-xs font-bold uppercase tracking-wider text-slate-400">{label}</span><strong className="mt-3 block text-3xl">{value}</strong><small className="mt-1 block text-xs text-slate-400">No live data yet</small></div>)}</div><div className="card overflow-hidden"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-5"><h2 className="font-extrabold">{role === "admin" ? "All reports" : "Department tickets"}</h2><div className="flex gap-2"><input value={query} onChange={e => setQuery(e.target.value)} className="w-48 rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="Search tickets..." /><select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm"><option value="all">All status</option>{Object.entries(statusLabel).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></div></div>{visible.length ? <div className="divide-y divide-slate-100">{visible.map(t => <div key={t.id} className="ticket-row grid gap-3 p-5 transition hover:bg-slate-50 lg:grid-cols-[80px_1fr_100px_130px] lg:items-center"><span className="text-xs font-black text-indigo-600">{t.id}</span><div><strong className="block text-sm">{t.title}</strong><small className="text-xs text-slate-400">{t.room} · {t.dept} · {t.created}{role === "faculty" || role === "admin" ? ` · ${t.reporter}` : ""}</small></div><Badge value={t.priority} /><div><Badge value={t.status} type="status" /><small className="mt-2 block text-xs text-slate-400">{t.tech}</small></div></div>)}</div> : <div className="empty-ticket-state"><span><Icon name="clipboard" size={22} /></span><h3>No tickets yet</h3><p>New reports will appear here once they are submitted.</p>{role !== "admin" && <button onClick={() => choosePage("New report")} className="btn-primary">Create a report <Icon name="arrow" size={14} /></button>}</div>}</div></>}</motion.div><footer className="app-footer"><div className="app-footer-brand"><span className="brand-mark-modern">FX</span><div><strong>Fixko</strong><p>Small reports. Faster fixes. Better campus spaces.</p></div></div><div className="app-footer-links"><button onClick={() => choosePage("Notifications")}>Updates <span>→</span></button><button onClick={() => choosePage("New report")}>Report an issue <span>→</span></button><a href="mailto:support@fixko.school">Support <span>→</span></a></div><div className="app-footer-bottom"><span>{role === "admin" ? "Campus operations workspace" : role === "faculty" ? "Helping your department stay on track" : "Every report helps improve your campus"}</span><span>© 2026 Fixko · Trusted school communities</span></div></footer></div></main>
   </div>;
 }
 
 function ReportForm({ onSubmitted }: { onSubmitted: () => void }) {
   const [submitted, setSubmitted] = useState(false);
-  return <div className="card max-w-3xl p-6 lg:p-8">{submitted ? <div className="py-16 text-center"><div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-2xl text-emerald-600">✓</div><h2 className="mt-5 text-2xl font-black">Report submitted</h2><p className="mt-2 text-slate-500">Ticket FX-1043 was routed to the maintenance queue.</p><button className="btn-primary mt-6" onClick={onSubmitted}>View my tickets</button></div> : <><span className="eyebrow">New report</span><h2 className="mt-4 text-2xl font-black">Tell us what's broken, missing, or needs attention.</h2><div className="mt-7 grid gap-5 md:grid-cols-2"><label className="text-sm font-bold">School email<input defaultValue="jdelacruz@school.edu.ph" className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-3" /></label><label className="text-sm font-bold">Student / Faculty ID<input defaultValue="2023-04521" className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-3" /></label><label className="text-sm font-bold">Building<select className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-3"><option>Main Building</option><option>Tech Wing</option><option>Annex</option></select></label><label className="text-sm font-bold">Room<select className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-3"><option>Room 204</option><option>Room 101</option><option>Computer Lab 2</option></select></label><label className="text-sm font-bold md:col-span-2">What needs attention?<textarea className="mt-2 min-h-28 w-full rounded-lg border border-slate-200 px-3 py-3" placeholder="Describe the issue..." /></label><label className="text-sm font-bold md:col-span-2">Photo (optional)<input type="file" className="mt-2 block w-full rounded-lg border border-dashed border-indigo-200 bg-indigo-50 p-4 text-sm" /></label></div><div className="mt-5"><span className="text-sm font-bold">Priority</span><div className="mt-2 flex flex-wrap gap-2">{["low", "medium", "high", "critical"].map(p => <button key={p} className={`badge badge-${p} border-2 border-transparent hover:border-current`}>{p}</button>)}</div></div><div className="mt-7 flex justify-end"><button className="btn-primary" onClick={() => setSubmitted(true)}>Submit report →</button></div></>}</div>;
+  const [department, setDepartment] = useState("");
+  const [building, setBuilding] = useState("");
+  const [floor, setFloor] = useState("");
+  const [room, setRoom] = useState("");
+  const [priority, setPriority] = useState("medium");
+  const floorCount = getBuildingFloorCount(building);
+  const roomStart = floor ? Number(floor) * 100 : 0;
+  const roomChoices = building === "GYM"
+    ? []
+    : building === "ITS CSDL BUILDING" && floor
+      ? Array.from({ length: Number(floor), }, (_, index) => roomStart + index + 1)
+      : roomStart
+        ? Array.from({ length: 100 }, (_, index) => roomStart + index)
+        : [];
+  return <div className="report-form-page">
+    <CampusMap compact />
+    {submitted ? <div className="card report-success-card"><div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-2xl text-emerald-600">✓</div><h2 className="mt-5 text-2xl font-black">Report submitted</h2><p className="mt-2 text-slate-500">Ticket FX-1043 was routed to the {department} department and maintenance queue.</p><button className="btn-primary mt-6" onClick={onSubmitted}>View my tickets</button></div> : <form className="report-form-layout" onSubmit={event => { event.preventDefault(); setSubmitted(true); }}>
+      <div className="report-form-main">
+        <section className="report-form-section"><div className="report-form-section-heading"><div><h3>Where is it?</h3><p>Pick the department and exact location.</p></div><span className="report-form-step">01</span></div><div className="report-form-fields"><label>College department<select required value={department} onChange={event => setDepartment(event.target.value)}><option value="">Select your department</option>{collegeDepartments.map(item => <option value={item} key={item}>{item}</option>)}</select></label><label>Building<select required value={building} onChange={event => { setBuilding(event.target.value); setFloor(""); setRoom(""); }}><option value="">Select a building</option>{reportBuildings.map(item => <option value={item} key={item}>{item}</option>)}</select></label><label>Level / floor<select required value={floor} disabled={!building} onChange={event => { const selectedFloor = event.target.value; setFloor(selectedFloor); setRoom(building === "GYM" && selectedFloor ? "none" : ""); }}><option value="">{building ? "Select a floor" : "Select a building first"}</option>{Array.from({ length: floorCount }, (_, index) => <option value={index + 1} key={index + 1}>{index + 1}{index === 0 ? "st" : index === 1 ? "nd" : index === 2 ? "rd" : "th"} floor</option>)}</select></label><label>Room<select required value={room} disabled={!floor} onChange={event => setRoom(event.target.value)}><option value="">{floor ? (building === "GYM" ? "No room available" : "Select a room") : "Select a floor first"}</option>{building === "GYM" && floor ? <option value="none">None</option> : roomChoices.map(roomNumber => <option value={roomNumber} key={roomNumber}>Room {roomNumber}</option>)}</select></label></div></section>
+        <section className="report-form-section"><div className="report-form-section-heading"><div><h3>What is the problem?</h3><p>Be as specific as you can so it gets fixed faster.</p></div><span className="report-form-step">02</span></div><div className="report-form-fields"><label>Item<select required><option value="">Select an item</option><option>Air conditioning</option><option>Chair or desk</option><option>Projector or screen</option><option>Lighting</option><option>Window or door</option><option>Other</option></select></label><label>Condition<select required><option value="">Select condition</option><option>Broken</option><option>Damaged</option><option>Missing</option><option>Needs maintenance</option></select></label><label className="report-quantity">How many items?<input type="number" min="1" defaultValue="1" /></label><label className="report-description">Description<textarea required placeholder="Example: The aircon runs but only blows warm air during afternoon classes." /></label></div><fieldset className="report-urgency"><legend>Urgency</legend><div>{["low", "medium", "high"].map(level => <label key={level} className={priority === level ? "is-selected" : ""}><input type="radio" name="urgency" value={level} checked={priority === level} onChange={() => setPriority(level)} />{level}</label>)}</div></fieldset></section>
+        <section className="report-form-section report-photo-section"><div className="report-form-section-heading"><div><h3>Add a photo <small>(optional)</small></h3><p>A photo helps the maintenance team bring the right tools.</p></div><span className="report-form-step">03</span></div><label className="report-upload"><Icon name="box" size={24} /><strong>Take a photo or upload</strong><small>JPG or PNG, up to 5 MB</small><input type="file" accept="image/png,image/jpeg" /></label></section>
+        <div className="report-form-actions"><button type="button" className="btn-secondary">Cancel</button><button type="submit" className="btn-primary">Submit report <Icon name="arrow" size={14} /></button></div>
+      </div>
+      <aside className="report-form-aside"><div className="report-tip-card"><span className="report-aside-icon"><Icon name="spark" size={16} /></span><h3>Tips for a good report</h3><ul><li>Include the room and item number if there is one.</li><li>Say when the problem started.</li><li>Mark it high only if it is unsafe or stops a class.</li></ul></div><div className="report-popular-card"><h3><Icon name="activity" size={15} /> Most reported this month</h3>{[["CMA BUILDING · Room 204", "9 reports"], ["PTC BUILDING · Room 112", "8 reports"], ["CHS BUILDING · Lab 2", "7 reports"]].map(([place, count]) => <div key={place}><span>{place}</span><small>{count}</small></div>)}</div></aside>
+    </form>}
+  </div>;
 }
 
 function Analytics() { return <div className="grid gap-5 lg:grid-cols-2"><div className="card p-6"><h2 className="font-extrabold">Open vs resolved</h2><div className="mt-8 flex h-48 items-end justify-around gap-4">{[55, 80, 45, 95, 70, 88].map((height, i) => <div className="flex h-full flex-1 flex-col justify-end" key={i}><div className="rounded-t-lg bg-indigo-500" style={{ height: `${height}%` }} /><span className="mt-2 text-center text-xs text-slate-400">M{i + 1}</span></div>)}</div></div><div className="card p-6"><h2 className="font-extrabold">Most reported items</h2><div className="mt-6 space-y-5">{[["Aircon", 82], ["Projectors", 61], ["Student chairs", 48], ["Lighting", 32]].map(([item, value]) => <div key={item}><div className="mb-2 flex justify-between text-sm font-bold"><span>{item}</span><span>{value}</span></div><div className="h-2 rounded-full bg-slate-100"><div className="h-2 rounded-full bg-teal-500" style={{ width: `${Number(value)}%` }} /></div></div>)}</div></div></div>; }
 function Inventory() { return <div className="card overflow-hidden"><div className="border-b border-slate-100 p-5"><h2 className="font-extrabold">Equipment inventory</h2></div><div className="divide-y divide-slate-100">{[["EQ-201", "Split-type aircon", "Room 204", "Damaged"], ["EQ-118", "Ceiling projector", "Room 101", "Under repair"], ["EQ-330", "Student chair (x24)", "Room 204", "Damaged"], ["EQ-412", "Desktop PC — Unit 12", "Computer Lab 2", "Damaged"]].map(row => <div className="grid gap-2 p-5 text-sm sm:grid-cols-4" key={row[0]}><span className="font-bold text-indigo-600">{row[0]}</span><strong>{row[1]}</strong><span className="text-slate-500">{row[2]}</span><span className="badge badge-high w-fit">{row[3]}</span></div>)}</div></div>; }
 function Users() { return <div className="card overflow-hidden"><div className="border-b border-slate-100 p-5"><h2 className="font-extrabold">Registered users</h2></div>{["Juan Dela Cruz · Student · General", "Maria Santos · Student · Science", "Mrs. Bautista · Faculty · Admin", "R. Aquino · Admin · Maintenance"].map(user => <div className="border-b border-slate-100 p-5 text-sm last:border-0" key={user}>{user}</div>)}</div>; }
 function Rooms() { return <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{["Room 101", "Room 204", "Computer Lab 2", "Gymnasium", "Faculty Lounge", "Library"].map((room, i) => <div className="card p-5" key={room}><div className="flex items-start justify-between"><div><h3 className="font-extrabold">{room}</h3><p className="mt-1 text-xs text-slate-400">Main Building · {i % 2 ? "Science" : "General"}</p></div><span className="rounded-lg bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-600">{i % 4} open</span></div><button className="btn-secondary mt-5 w-full text-sm">Show QR code</button></div>)}</div>; }
-function Notifications() { return <div className="card divide-y divide-slate-100">{["Your ticket FX-1041 moved to Under review.", "FX-1042 was marked Critical and assigned to R. Aquino.", "FX-1029 was marked Resolved — rate the repair."].map((item, i) => <div className="flex gap-4 p-5" key={item}><span className={`mt-1 h-2 w-2 rounded-full ${i < 2 ? "bg-rose-500" : "bg-slate-200"}`} /><div><p className="text-sm font-semibold">{item}</p><small className="text-xs text-slate-400">{i === 0 ? "20 min ago" : i === 1 ? "2h ago" : "1 week ago"}</small></div></div>)}</div>; }
+function Notifications() { return <div className="card notification-empty-page"><div className="notification-empty-icon"><Icon name="bell" size={24} /></div><h2>You're all caught up</h2><p>There are no new notifications right now. We will let you know when something needs your attention.</p></div>; }
+
+type BuildingAlert = "critical" | "slight" | "normal";
+const campusBuildings: { name: string; shortName: string; alert: BuildingAlert; reports: number }[] = [
+  { name: "CMA Building", shortName: "CMA", alert: "critical", reports: 9 },
+  { name: "PTC Building", shortName: "PTC", alert: "slight", reports: 5 },
+  { name: "River Side Building", shortName: "RIVER SIDE", alert: "normal", reports: 2 },
+  { name: "MDA Hall Building", shortName: "MDA HALL", alert: "normal", reports: 1 },
+  { name: "Basic Ed Building", shortName: "BASIC ED", alert: "slight", reports: 4 },
+  { name: "CHS Building", shortName: "CHS", alert: "normal", reports: 2 },
+  { name: "North Hall Building", shortName: "NORTH HALL", alert: "critical", reports: 8 },
+  { name: "ITS CSDL Building", shortName: "ITS CSDL", alert: "slight", reports: 4 },
+  { name: "Gym", shortName: "GYM", alert: "normal", reports: 1 }
+];
+
+function CampusMap({ compact = false }: { compact?: boolean }) {
+  return <section className={`campus-map-card ${compact ? "campus-map-card-compact" : ""}`} aria-label="Campus report activity map">
+    <div className="campus-map-heading"><div><span className="eyebrow"><Icon name="building" size={13} /> Live campus map</span><h2>See where help is needed</h2><p>Buildings pulse according to recent reports.</p></div><span className="campus-map-live"><i /> LIVE</span></div>
+    <div className="campus-map-body"><div className="campus-map-canvas">
+      <img className="campus-route-map-image" src="/campus-route-map.png" alt="Campus route map showing the school buildings and walkways" />
+      {campusBuildings.map((building, index) => <div className={`campus-map-marker campus-map-marker-${building.alert} campus-map-marker-position-${index + 1}`} key={building.name} title={`${building.name}: ${building.reports} reports`}><span>{building.shortName}</span><small>{building.reports}</small>{building.alert === "critical" && <b><Icon name="alert" size={10} /></b>}</div>)}
+    </div>
+    <aside className="campus-map-info">
+      <div className="campus-map-info-card campus-map-status-card"><span className="campus-info-label">CAMPUS STATUS</span><strong><i /> Monitoring live activity</strong><p>Report concentration updates the building indicators automatically.</p><div className="campus-status-counts"><span><b>{campusBuildings.filter(building => building.alert === "critical").length}</b>Critical</span><span><b>{campusBuildings.filter(building => building.alert === "slight").length}</b>Slight</span><span><b>{campusBuildings.filter(building => building.alert === "normal").length}</b>Normal</span></div></div>
+      <div className="campus-map-info-card"><span className="campus-info-label">MOST REPORTED</span><div className="campus-top-building-list">{campusBuildings.slice().sort((a, b) => b.reports - a.reports).slice(0, 3).map((building, index) => <div key={building.name}><span><b>{index + 1}</b>{building.name}</span><strong>{building.reports}</strong></div>)}</div></div>
+      <div className="campus-map-info-card campus-map-help-card"><span className="campus-info-label">HOW TO READ THE MAP</span><p><i className="campus-status-dot campus-status-critical" /> Red buildings need attention first.</p><p><i className="campus-status-dot campus-status-slight" /> Yellow buildings have some activity.</p><p><i className="campus-status-dot campus-status-normal" /> Green buildings are within normal activity.</p></div>
+    </aside></div>
+    <div className="campus-map-footer"><span><i className="campus-status-dot campus-status-critical" /> Critical</span><span><i className="campus-status-dot campus-status-slight" /> Slight activity</span><span><i className="campus-status-dot campus-status-normal" /> Normal</span><small>Updated just now</small></div>
+  </section>;
+}
+
+function ReportSummary() {
+  const totalReports = tickets.length;
+  const resolvedReports = tickets.filter(ticket => ticket.status === "resolved").length;
+  const inProgressReports = tickets.filter(ticket => ticket.status === "review" || ticket.status === "progress").length;
+  const summary = [
+    ["Total reports", totalReports, "Everything you have reported", "clipboard", "indigo"],
+    ["Resolved", resolvedReports, "Issues successfully closed", "check", "emerald"],
+    ["In progress", inProgressReports, "Reports being reviewed or fixed", "activity", "teal"]
+  ] as const;
+  return <section className="report-summary-grid" aria-label="Report summary">{summary.map(([label, value, text, icon, tone]) => <motion.div whileHover={{ y: -4 }} className={`report-summary-card card report-summary-${tone}`} key={label}><div className="report-summary-top"><span className="report-summary-icon"><Icon name={icon} size={17} /></span><span>{label}</span></div><strong>{value}</strong><p>{text}</p></motion.div>)}</section>;
+}
+
+function MyTickets() {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const sortedTickets = [...tickets].sort((a, b) => b.createdAt - a.createdAt);
+  return <div className="my-tickets-page"><section className="my-tickets card">
+    <div className="my-tickets-heading"><div><span className="eyebrow"><Icon name="clipboard" size={13} /> Your reports</span><h2>My tickets</h2><p>Click a report to view its full details.</p></div><span className="my-tickets-count">{sortedTickets.length} reports</span></div>
+    {sortedTickets.length ? <div className="my-tickets-list">{sortedTickets.map(ticket => {
+      const expanded = expandedId === ticket.id;
+      return <article className={`my-ticket ${expanded ? "is-expanded" : ""}`} key={ticket.id}>
+        <button className="my-ticket-trigger" onClick={() => setExpandedId(expanded ? null : ticket.id)} aria-expanded={expanded}>
+          <span className="my-ticket-icon"><Icon name="clipboard" size={17} /></span>
+          <span className="my-ticket-main"><strong>{ticket.title}</strong><small>{ticket.id} <i>|</i> {ticket.room} <i>|</i> {ticket.created}</small></span>
+          <Badge value={ticket.status} type="status" />
+          <span className={`my-ticket-chevron ${expanded ? "is-open" : ""}`} />
+        </button>
+        <div className="my-ticket-details"><div className="my-ticket-details-grid"><div><span>Reported</span><strong>{ticket.created}</strong></div><div><span>Location</span><strong>{ticket.room} · {ticket.dept}</strong></div><div><span>Priority</span><Badge value={ticket.priority} /></div><div><span>Assigned to</span><strong>{ticket.tech}</strong></div></div><div className="my-ticket-description"><span>Description</span><p>{ticket.description}</p></div></div>
+      </article>;
+    })}</div> : <div className="empty-ticket-state"><span><Icon name="clipboard" size={22} /></span><h3>No tickets yet</h3><p>Your submitted reports will appear here.</p></div>}
+  </section></div>;
+}
 
 function StudentDashboard({ onNewReport, onViewTickets }: { onNewReport: () => void; onViewTickets: () => void }) {
   return <div className="student-dashboard space-y-5">
+    <CampusMap />
     <section className="student-welcome relative overflow-hidden rounded-[26px] p-6 text-white lg:p-8">
       <div className="student-welcome-orb student-welcome-orb-one" /><div className="student-welcome-orb student-welcome-orb-two" />
       <div className="relative z-10 max-w-2xl"><span className="student-kicker">YOUR CAMPUS IMPACT</span><h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Keep your campus moving, one report at a time.</h2><p className="mt-3 max-w-xl text-sm leading-6 text-indigo-100">You help the right people notice problems sooner. Track your requests, stay updated, and make shared spaces better for everyone.</p><div className="mt-6 flex flex-wrap gap-3"><button onClick={onNewReport} className="student-welcome-primary"><Icon name="edit" size={16} /> Report an issue</button><button onClick={onViewTickets} className="student-welcome-secondary">View my reports <Icon name="arrow" size={15} /></button></div></div>
       <div className="student-welcome-stats relative z-10 mt-7 grid max-w-xl grid-cols-3 gap-3 sm:absolute sm:right-8 sm:top-8 sm:mt-0 sm:w-[310px]"><div><strong>30s</strong><span>to report</span></div><div><strong>24/7</strong><span>status updates</span></div><div><strong>1</strong><span>shared campus</span></div></div>
     </section>
+    <ReportSummary />
     <div className="grid gap-5 lg:grid-cols-[1.35fr_.65fr]">
       <section className="card p-6"><div className="flex items-start justify-between gap-4"><div><span className="eyebrow"><Icon name="activity" size={13} /> Your activity</span><h2 className="mt-4 text-xl font-black">Make your next report count</h2><p className="mt-2 max-w-lg text-sm leading-6 text-slate-500">Clear details help maintenance teams respond faster and reduce repeat issues.</p></div><span className="student-score-badge">Good citizen <Icon name="check" size={13} /></span></div><div className="student-progress-card mt-6"><div className="flex items-center justify-between"><div><strong className="block text-sm">Reporting profile</strong><small className="text-xs text-slate-400">2 of 3 helpful habits completed</small></div><strong className="text-2xl text-indigo-600">67%</strong></div><div className="student-progress-track mt-4"><span style={{ width: "67%" }} /></div><div className="mt-5 grid gap-3 sm:grid-cols-3">{[["check", "Add a photo", true], ["check", "Choose a room", true], ["shield", "Rate a repair", false]].map(([icon, label, done]) => <div className={`student-habit ${done ? "done" : ""}`} key={label as string}><span><Icon name={icon as IconName} size={14} /></span><small>{label}</small></div>)}</div></div></section>
       <section className="student-tip-card"><div className="student-tip-icon"><Icon name="spark" size={20} /></div><span className="student-kicker student-tip-kicker">QUICK TIP</span><h2 className="mt-3 text-xl font-black">Help us fix it faster</h2><p className="mt-2 text-sm leading-6 text-slate-500">Include the exact room, what happened, and when you first noticed it. A photo makes recurring issues easier to spot.</p><button onClick={onNewReport} className="student-tip-link">Start a detailed report <Icon name="arrow" size={14} /></button></section>
-    </div>
-    <div className="grid gap-5 md:grid-cols-3">
-      {[["Open reports", "2", "One is already with a technician", "activity", "indigo"], ["Resolved this term", "1", "Thanks for helping close the loop", "check", "emerald"], ["Campus pulse", "87%", "Reports resolved on time this week", "chart", "teal"]].map(([label, value, text, icon, tone]) => <motion.div whileHover={{ y: -4 }} className={`student-metric card student-metric-${tone} p-5`} key={label}><div className="flex items-center justify-between"><span className="student-metric-icon"><Icon name={icon as IconName} size={17} /></span><span className="text-xs font-black uppercase tracking-wider text-slate-400">{label}</span></div><strong className="mt-4 block text-3xl font-black">{value}</strong><p className="mt-2 text-xs leading-5 text-slate-500">{text}</p></motion.div>)}
     </div>
     <section className="student-journey card p-6"><div className="flex flex-wrap items-end justify-between gap-3"><div><span className="eyebrow">How Fixko works for you</span><h2 className="mt-3 text-xl font-black">Stay in the loop from report to resolution</h2></div><button onClick={onViewTickets} className="text-sm font-bold text-indigo-600">See all updates <Icon name="arrow" size={14} /></button></div><div className="mt-7 grid gap-4 md:grid-cols-4">{[["01", "Report", "Tell us what needs attention.", "edit"], ["02", "Reviewed", "The team checks the details.", "shield"], ["03", "In progress", "A technician works on it.", "activity"], ["04", "Resolved", "Rate the repair and close the loop.", "check"]].map(([number, title, text, icon], index) => <div className="student-journey-step" key={title}><span className={`student-journey-number ${index < 2 ? "complete" : ""}`}>{number}</span><Icon name={icon as IconName} size={18} /><strong>{title}</strong><p>{text}</p>{index < 3 && <i />}</div>)}</div></section>
   </div>;
