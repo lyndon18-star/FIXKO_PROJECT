@@ -1,0 +1,28 @@
+{
+  "name": "fixko/backend",
+  "type": "project",
+  "require": {
+    "php": "^8.1",
+    "laravel/framework": "^10.0",
+    "laravel/sanctum": "^3.2"
+  },
+  "require-dev": {
+    "fakerphp/faker": "^1.23",
+    "laravel/pint": "^1.13",
+    "phpunit/phpunit": "^10.0",
+    "mockery/mockery": "1.6.15"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/",
+      "Database\\Factories\\": "database/factories/",
+      "Database\\Seeders\\": "database/seeders/"
+    }
+  },
+  "scripts": {
+    "post-autoload-dump": ["@php artisan package:discover --ansi"],
+    "test": "@php vendor/bin/phpunit --configuration phpunit.xml"
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}

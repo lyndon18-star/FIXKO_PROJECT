@@ -3,6 +3,11 @@ node_modules/
 dist/
 build/
 vendor/
+backend/.phpunit.result.cache
+backend/storage/*
+!backend/storage/.gitignore
+backend/bootstrap/cache/*
+!backend/bootstrap/cache/.gitignore
 
 .env
 .env.*
