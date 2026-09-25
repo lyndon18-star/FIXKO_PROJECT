@@ -5,7 +5,7 @@ export type ApiUser = {
   name: string;
   email: string;
   school_id: string;
-  role: "student" | "technician" | "admin";
+  role: "user" | "admin";
   department?: string | null;
 };
 
@@ -16,10 +16,10 @@ export type ApiRoom = {
   name: string;
   code: string | null;
   department: string | null;
-  open_tickets_count?: number;
+  open_reports_count?: number;
 };
 
-export type ApiTicket = {
+export type ApiReport = {
   id: number;
   reporter_school_id_snapshot: string;
   reporter_email_snapshot: string;
@@ -32,6 +32,7 @@ export type ApiTicket = {
   description: string;
   priority: "low" | "medium" | "high" | "critical";
   status: "pending" | "under_review" | "in_progress" | "resolved";
+  photo_url?: string | null;
   created_at: string;
   comments?: Array<{ id: number; message: string; created_at: string; author?: ApiUser }>;
   feedback?: { rating: number; comment: string | null; created_at: string } | null;
@@ -41,9 +42,9 @@ export type ApiNotification = {
   id: number;
   message: string;
   is_read: boolean;
-  related_ticket_id: number | null;
+  related_report_id: number | null;
   created_at: string;
-  ticket?: ApiTicket;
+  report?: ApiReport;
 };
 
 export type ApiEquipment = {
@@ -72,20 +73,98 @@ type ApiResponse<T> = {
   message?: string;
 } & T;
 
+export type ApiErrorPayload = {
+  message?: string;
+  code?: string;
+  request_id?: string;
+  errors?: Record<string, string[]>;
+};
+
+export class ApiError extends Error {
+  readonly status: number;
+  readonly code: string;
+  readonly requestId?: string;
+  readonly fieldErrors: Record<string, string[]>;
+
+  constructor(message: string, status: number, payload: ApiErrorPayload = {}, requestId?: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = payload.code ?? "REQUEST_FAILED";
+    this.requestId = payload.request_id ?? requestId;
+    this.fieldErrors = payload.errors ?? {};
+  }
+}
+
+function commonErrorMessage(status: number, code: string, message?: string, fieldErrors: Record<string, string[]> = {}) {
+  if (message === "Incorrect username or password.") {
+    return message;
+  }
+
+  if (code === "NETWORK_ERROR") {
+    return "Network error. Please check your connection and try again.";
+  }
+
+  const firstFieldError = Object.values(fieldErrors).flat()[0];
+  if (code === "VALIDATION_ERROR") {
+    return firstFieldError ?? "Please check the highlighted information and try again.";
+  }
+
+  return message ?? ({
+    401: "Your session has expired. Please sign in again.",
+    403: "You do not have permission to perform this action.",
+    404: "The requested item could not be found.",
+    405: "This action is not available.",
+    409: "This request conflicts with existing information.",
+    422: "The submitted information could not be processed.",
+    429: "Too many requests. Please wait and try again.",
+    500: "Server error. Please try again later.",
+  }[status] ?? "Something went wrong. Please try again.");
+}
+
+function createRequestId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `web-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = typeof window !== "undefined" ? window.localStorage.getItem("fixko-token") : null;
   const headers = new Headers(options.headers);
+  const requestId = createRequestId();
   headers.set("Accept", "application/json");
-  if (options.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+  headers.set("X-Request-ID", requestId);
+  if (options.body && !(options.body instanceof FormData) && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const response = await fetch(`${API_URL}${path}`, { ...options, headers });
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, { ...options, headers });
+  } catch {
+    throw new ApiError("Unable to reach the Fixko server. Check your connection and try again.", 0, {
+      code: "NETWORK_ERROR",
+    }, requestId);
+  }
+
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const validationMessage = payload?.errors
-      ? Object.values(payload.errors as Record<string, string[]>).flat()[0]
-      : undefined;
-    throw new Error(validationMessage ?? payload?.message ?? "The request could not be completed.");
+    const errorPayload = payload as ApiErrorPayload;
+    const validationMessage = commonErrorMessage(
+      response.status,
+      errorPayload.code ?? "REQUEST_FAILED",
+      errorPayload.message,
+      errorPayload.errors ?? {},
+    );
+    if (response.status === 401 && typeof window !== "undefined") clearToken();
+    throw new ApiError(
+      validationMessage,
+      response.status,
+      errorPayload,
+      response.headers.get("X-Request-ID") ?? requestId,
+    );
   }
   return payload as T;
 }
@@ -103,9 +182,28 @@ export function signup(input: {
   school_id: string;
   password: string;
   password_confirmation: string;
-  role: "student";
+  role: "user";
 }) {
   return request<ApiResponse<{ user: ApiUser; token: string }>>("/auth/signup", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function forgotPassword(email: string) {
+  return request<ApiResponse<{}>>("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export function resetPassword(input: {
+  token: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+}) {
+  return request<ApiResponse<{}>>("/auth/reset-password", {
     method: "POST",
     body: JSON.stringify(input),
   });
@@ -119,8 +217,8 @@ export function getRooms() {
   return request<ApiRoom[]>("/rooms");
 }
 
-export function getTickets() {
-  return request<{ data: ApiTicket[] }>("/tickets");
+export function getReports() {
+  return request<{ data: ApiReport[] }>("/reports");
 }
 
 export function getEquipment() {
@@ -135,14 +233,21 @@ export function getNotifications() {
   return request<{ data: ApiNotification[] }>("/notifications");
 }
 
-export function updateTicketStatus(ticketId: string, status: "pending" | "under_review" | "in_progress" | "resolved") {
-  return request<ApiTicket>(`/tickets/${ticketId}/status`, {
+export function updateReportStatus(reportId: string, status: "pending" | "under_review" | "in_progress" | "resolved") {
+  return request<ApiReport>(`/reports/${reportId}/status`, {
     method: "PATCH",
     body: JSON.stringify({ status }),
   });
 }
 
-export function createTicket(input: {
+export function addReportComment(reportId: string, message: string) {
+  return request<{ id: number; report_id: number; message: string; created_at: string; author?: ApiUser }>(`/reports/${reportId}/comments`, {
+    method: "POST",
+    body: JSON.stringify({ message }),
+  });
+}
+
+export function createReport(input: {
   school_id: string;
   email: string;
   room_id: number;
@@ -152,9 +257,19 @@ export function createTicket(input: {
   quantity?: number;
   description: string;
   priority: "low" | "medium" | "high" | "critical";
+  photo?: File | null;
 }) {
-  return request<ApiTicket>("/tickets", {
+  const body = new FormData();
+  Object.entries(input).forEach(([key, value]) => {
+    if (value instanceof File) {
+      body.append(key, value);
+    } else if (value !== undefined && value !== null) {
+      body.append(key, String(value));
+    }
+  });
+
+  return request<ApiReport>("/reports", {
     method: "POST",
-    body: JSON.stringify(input),
+    body,
   });
 }

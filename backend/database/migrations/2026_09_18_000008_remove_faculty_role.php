@@ -6,16 +6,16 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration {
     public function up(): void
     {
-        DB::table('users')->where('role', 'faculty')->update(['role' => 'student']);
+        DB::table('users')->whereIn('role', ['faculty', 'student', 'technician'])->update(['role' => 'user']);
         if (DB::getDriverName() === 'mysql') {
-            DB::statement("ALTER TABLE users MODIFY role ENUM('student', 'technician', 'admin') NOT NULL DEFAULT 'student'");
+            DB::statement("ALTER TABLE users MODIFY role ENUM('user', 'admin') NOT NULL DEFAULT 'user'");
         }
     }
 
     public function down(): void
     {
         if (DB::getDriverName() === 'mysql') {
-            DB::statement("ALTER TABLE users MODIFY role ENUM('student', 'faculty', 'technician', 'admin') NOT NULL DEFAULT 'student'");
+            DB::statement("ALTER TABLE users MODIFY role ENUM('user', 'admin') NOT NULL DEFAULT 'user'");
         }
     }
 };

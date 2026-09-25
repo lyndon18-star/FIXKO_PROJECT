@@ -6,6 +6,6 @@ class Room extends Model
 {
     use HasFactory;
     protected $fillable = ['building','floor','name','code','department'];
-    public function tickets() { return $this->hasMany(Ticket::class); }
+    public function reports() { return $this->hasMany(Report::class); }
     public function equipment() { return $this->hasMany(Equipment::class); }
 }

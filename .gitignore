@@ -6,6 +6,7 @@ vendor/
 backend/.phpunit.result.cache
 backend/storage/*
 !backend/storage/.gitignore
+backend/public/storage
 backend/bootstrap/cache/*
 !backend/bootstrap/cache/.gitignore
 

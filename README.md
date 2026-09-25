@@ -1,6 +1,6 @@
 # Fixko
 
-Fixko is a school facility reporting and ticket management system.
+Fixko is a school facility reporting and report management system.
 
 ## Current implementation
 
@@ -12,7 +12,7 @@ Fixko is a school facility reporting and ticket management system.
 - The dashboard shell supports student, faculty, and admin navigation with
   reports, filters, reporting form, analytics, inventory, users, rooms, and
   notifications.
-- `backend/` contains the Laravel API boundary and ticket controller contract for
+- `backend/` contains the Laravel API boundary and report controller contract for
   Sanctum-protected MySQL-backed endpoints.
 
 ## Run the frontend

@@ -1,50 +1,42 @@
-# Fixko database schema and ERD
+# Fixko Database Entity Relationship Diagram
 
-The application uses MySQL/MariaDB through XAMPP. Laravel migrations are the
-source of truth; phpMyAdmin is used to create the database and inspect the
-resulting tables.
+This document is the current application database reference for the `fixko` MySQL database. It describes the tables, relationships, constraints, report workflow, image storage, and campus room layout implemented by the Laravel migrations.
 
-## Database
-
-| Setting | Value |
-| --- | --- |
-| Database | `fixko` |
-| Character set | `utf8mb4` |
-| Collation | `utf8mb4_unicode_ci` |
-| Local host | `127.0.0.1` |
-| Port | `3306` |
-
-## Entity relationship diagram
+The ERD below is a domain ERD. Laravel framework/support tables are documented separately because they support the application but are not part of the facilities-reporting domain.
 
 ```mermaid
 erDiagram
-    USERS ||--o{ TICKETS : reports
-    USERS ||--o{ TICKETS : assigned_to
+    USERS ||--o{ REPORTS : submits
+    USERS ||--o{ REPORTS : handles
     USERS ||--o{ COMMENTS : writes
     USERS ||--o{ TICKET_STATUS_HISTORIES : changes
     USERS ||--o{ FEEDBACK : gives
-    USERS ||--o{ REPAIR_LOGS : records
+    USERS ||--o{ REPAIR_HISTORY : records
     USERS ||--o{ NOTIFICATIONS : receives
-    ROOMS ||--o{ TICKETS : contains
+    ROOMS ||--o{ REPORTS : contains
     ROOMS ||--o{ EQUIPMENT : contains
-    EQUIPMENT ||--o{ TICKETS : concerns
-    EQUIPMENT ||--o{ REPAIR_LOGS : has
-    TICKETS ||--o{ COMMENTS : has
-    TICKETS ||--o{ TICKET_STATUS_HISTORIES : tracks
-    TICKETS ||--o| FEEDBACK : receives
-    TICKETS ||--o{ REPAIR_LOGS : references
-    TICKETS ||--o{ NOTIFICATIONS : triggers
+    EQUIPMENT ||--o{ REPORTS : concerns
+    EQUIPMENT ||--o{ REPAIR_HISTORY : has
+    REPORTS ||--o{ COMMENTS : has
+    REPORTS ||--o{ TICKET_STATUS_HISTORIES : tracks
+    REPORTS ||--o| FEEDBACK : receives
+    REPORTS ||--o{ REPAIR_HISTORY : references
+    REPORTS ||--o{ NOTIFICATIONS : triggers
 
     USERS {
         bigint id PK
         varchar name
         varchar email UK
         varchar school_id UK
+        varchar password
         enum role
         varchar department
-        varchar password
-        timestamps
+        timestamp email_verified_at
+        varchar remember_token
+        timestamp created_at
+        timestamp updated_at
     }
+
     ROOMS {
         bigint id PK
         varchar building
@@ -52,8 +44,10 @@ erDiagram
         varchar name
         varchar code UK
         varchar department
-        timestamps
+        timestamp created_at
+        timestamp updated_at
     }
+
     EQUIPMENT {
         bigint id PK
         bigint room_id FK
@@ -63,16 +57,17 @@ erDiagram
         enum condition
         unsigned_int quantity
         text description
-        timestamps
+        timestamp created_at
+        timestamp updated_at
     }
-    TICKETS {
+
+    REPORTS {
         bigint id PK
         bigint reporter_id FK
-        bigint room_id FK
-        bigint equipment_id FK
-        bigint assigned_to FK
         varchar reporter_school_id_snapshot
         varchar reporter_email_snapshot
+        bigint room_id FK
+        bigint equipment_id FK
         varchar category
         varchar item_name
         varchar condition
@@ -80,120 +75,165 @@ erDiagram
         text description
         enum priority
         enum status
+        bigint handled_by FK
         varchar photo_url
         timestamp resolved_at
-        timestamps
+        timestamp created_at
+        timestamp updated_at
     }
+
     COMMENTS {
         bigint id PK
-        bigint ticket_id FK
+        bigint report_id FK
         bigint author_id FK
         text message
-        timestamps
+        timestamp created_at
+        timestamp updated_at
     }
+
     TICKET_STATUS_HISTORIES {
         bigint id PK
-        bigint ticket_id FK
-        bigint changed_by FK
+        bigint report_id FK
         varchar old_status
         varchar new_status
+        bigint changed_by FK
         timestamp changed_at
     }
+
     FEEDBACK {
         bigint id PK
-        bigint ticket_id FK UK
+        bigint report_id FK UK
         bigint user_id FK
-        tinyint rating
+        unsigned_tinyint rating
         text comment
-        timestamps
+        timestamp created_at
+        timestamp updated_at
     }
-    REPAIR_LOGS {
+
+    REPAIR_HISTORY {
         bigint id PK
         bigint equipment_id FK
-        bigint ticket_id FK
+        bigint report_id FK
         bigint user_id FK
         varchar action
         text notes
         decimal cost
         date repaired_at
-        timestamps
+        timestamp created_at
+        timestamp updated_at
     }
+
     NOTIFICATIONS {
         bigint id PK
         bigint user_id FK
-        bigint related_ticket_id FK
         text message
         boolean is_read
-        timestamps
+        bigint related_report_id FK
+        timestamp created_at
+        timestamp updated_at
     }
 ```
 
-## Application tables
+## Domain behavior represented by the schema
 
-### `users`
+### Reports and comments
 
-Authentication and authorization records. Roles are `student`, `technician`,
-and `admin`. `school_id` and `email` are unique.
+- `reports.description` stores the original problem description submitted by the user.
+- `reports.category` stores the report category.
+- `comments.message` stores follow-up discussion attached to a report.
+- `comments.report_id` identifies the report being discussed.
+- `comments.author_id` identifies the user or administrator who wrote the comment.
+- A user may comment on their own report, and an administrator may comment as part of report handling.
+- `ticket_status_histories` records status changes for a report.
+- `feedback` stores the user's report feedback and rating after resolution.
 
-### `rooms`
+### Report images
 
-Campus locations used by reports and equipment. `code` is an optional unique
-QR-friendly identifier.
+- `reports.photo_url` is nullable.
+- The database stores only a relative public-disk path, for example:
+  `report-photos/abc123.jpg`.
+- The binary image is stored by Laravel in:
+  `backend/storage/app/public/report-photos`.
+- The public browser URL is exposed through Laravel's storage link:
+  `backend/public/storage`.
+- Do not store a Windows local path or image binary directly in `reports.photo_url`.
+- Accepted upload formats are JPEG and PNG, with a maximum size of 5 MB.
 
-### `equipment`
+### Building and room grouping
 
-Inventory assigned to a room. `condition` is one of `new`, `good`, `fair`,
-`poor`, or `broken`.
+Every report belongs to one `rooms` record through `reports.room_id`. The `rooms.building` value is the authoritative building category used to group reports; room names must not be used alone because the same room name can exist in multiple buildings.
 
-### `tickets`
+The applied campus room layout is:
 
-The central report table. `reporter_school_id_snapshot` and
-`reporter_email_snapshot` preserve the reporter details at submission time.
-`status` is `pending`, `under_review`, `in_progress`, or `resolved`.
-`priority` is `low`, `medium`, `high`, or `critical`.
+| Building | Floors | Rooms |
+|---|---:|---|
+| CMA BUILDING | 1-4 | `Room 100`-`Room 499` |
+| BASIC ED BUILDING | 1-4 | `Room 100`-`Room 499` |
+| PTC BUILDING | 1-4 | `Room 100`-`Room 499` |
+| NORTH HALL BUILDING | 1-4 | `Room 100`-`Room 499` |
+| MDA HALL BUILDING | 1-5* | `Room 100`-`Room 599` |
+| MBA HALL BUILDING | 1-5 | `Room 100`-`Room 599` |
+| CHS BUILDING | 1-4 | `Room 100`-`Room 499` |
+| ITS CSDL BUILDING | 1-2 | Floor 1: `Room 101`; floor 2: `Room 201`, `Room 202` |
+| GYM | 1 | `Gym` |
+| RIVER SIDE BUILDING | 1-8 | Floors 1-7 use the numbered room ranges; floor 8 has `Room 801`, `Room 802`, `Room 803`, and `Open Field` |
 
-### `comments`, `ticket_status_histories`, and `feedback`
+`MDA HALL BUILDING` and `CHS BUILDING` floor limits follow the existing project configuration. If the physical campus inventory differs, update migrations `000012` and `000013` before recreating or extending the database.
 
-These tables store ticket communication, every status transition, and one
-post-resolution rating per ticket.
+For standard numbered floors, the room range is based on the floor number:
 
-### `repair_logs`
+- Floor 1: `100`-`199`
+- Floor 2: `200`-`299`
+- Floor 3: `300`-`399`
+- Floor 4: `400`-`499`
+- Floor 5: `500`-`599`
+- Floor 6: `600`-`699`
+- Floor 7: `700`-`799`
+- Floor 8: special River Side inventory listed above
 
-Maintenance actions for equipment, optionally linked to the ticket that
-requested the repair.
+The exact boundary rooms (`Room 100`, `Room 200`, `Room 300`, and so on) are included by migration `2026_09_23_000013_add_floor_boundary_rooms`. The main room inventory is seeded by migration `2026_09_23_000012_seed_campus_room_layout`.
 
-### `notifications`
+## Key constraints
 
-Per-user messages optionally linked to a ticket. `is_read` supports the
-notification inbox.
+- `users.email` and `users.school_id` are unique.
+- `rooms.code` and `equipment.asset_tag` are unique.
+- Each report can have at most one feedback record because `feedback.report_id` is unique.
+- `reports.equipment_id`, `reports.handled_by`, `repair_history.report_id`, and `notifications.related_report_id` may be null.
+- `reports.photo_url` may be null when a report has no image.
+- Deleting a user cascades to their reports, comments, feedback, and notifications where the corresponding foreign key uses `ON DELETE CASCADE`; user references in repair history remain restricted.
+- Deleting a room is restricted when reports reference it, unless the database operation is handled by the application or migration.
+- Deleting a report cascades to its comments, status history, and feedback; related repair history and notifications are set to null where the foreign key is nullable.
 
-## Framework tables
+## Laravel support tables
 
-Laravel also creates `password_reset_tokens`, `personal_access_tokens`,
-`cache`, `cache_locks`, `sessions`, `jobs`, and `failed_jobs`. These support
-password resets, Sanctum, sessions, caching, queues, and failed job tracking.
+These tables exist in the database but are omitted from the domain ERD:
 
-## XAMPP and phpMyAdmin setup
+- `cache`
+- `cache_locks`
+- `migrations`
+- `password_reset_tokens`
+- `personal_access_tokens`
+- `sessions`
 
-1. Start **Apache** and **MySQL** in the XAMPP Control Panel.
-2. Open `http://localhost/phpmyadmin`.
-3. Choose **Import**, select `backend/database/sql/fixko_schema.sql`, and run it.
-   The script creates the `fixko` database with `utf8mb4` and all application
-   and Laravel framework tables.
-4. Copy `backend/.env.example` to `backend/.env` and keep the MySQL values
-   aligned with the XAMPP installation:
+They are framework infrastructure and do not represent Fixko business entities.
 
-   ```dotenv
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=fixko
-   DB_USERNAME=root
-   DB_PASSWORD=
-   ```
+## Applying the schema
 
-5. Run `php artisan db:seed` if sample users and rooms are needed.
+### Recommended: Laravel migrations
 
-For a clean Laravel-managed setup, create an empty `fixko` database in
-phpMyAdmin and run `php artisan migrate --seed` instead of importing the SQL
-file. The migrations remain the source of truth for future schema changes.
+From the repository root:
+
+```powershell
+php backend\artisan migrate
+```
+
+This creates or updates the database schema and applies the campus room migrations. The currently applied room migrations are:
+
+- `2026_09_23_000012_seed_campus_room_layout`
+- `2026_09_23_000013_add_floor_boundary_rooms`
+
+### Manual phpMyAdmin import
+
+`backend\database\sql\fixko_schema.sql` contains the table structure for manual MySQL/phpMyAdmin setup, including `reports.photo_url` and the comments/report relationships. It does not contain the large campus room inventory because that inventory is maintained by Laravel migrations.
+
+For a complete schema including the seeded room layout, use the Laravel migration path above. Importing the SQL file alone creates the tables but does not create the canonical campus rooms. Do not run the SQL file against a database that already contains the same tables unless the database is intentionally being recreated; the SQL file drops and recreates application tables.

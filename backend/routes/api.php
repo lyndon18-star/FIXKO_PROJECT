@@ -5,7 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RoomController;
-use App\Http\Controllers\TicketController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
@@ -19,14 +19,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::get('auth/me', [AuthController::class, 'me']);
 
-    Route::apiResource('tickets', TicketController::class);
-    Route::patch('tickets/{ticket}/status', [TicketController::class, 'updateStatus']);
-    Route::post('tickets/{ticket}/comments', [TicketController::class, 'comment']);
-    Route::post('tickets/{ticket}/feedback', [TicketController::class, 'feedback']);
+    Route::apiResource('reports', ReportController::class);
+    Route::patch('reports/{report}/status', [ReportController::class, 'updateStatus']);
+    Route::post('reports/{report}/comments', [ReportController::class, 'comment']);
+    Route::post('reports/{report}/feedback', [ReportController::class, 'feedback']);
     Route::get('rooms/{room}/qr', [RoomController::class, 'qr']);
     Route::apiResource('rooms', RoomController::class)->only(['index', 'show']);
-    Route::get('equipment/{equipment}/repair-log', [EquipmentController::class, 'repairLog']);
-    Route::post('equipment/{equipment}/repair-log', [EquipmentController::class, 'storeRepairLog']);
+    Route::get('equipment/{equipment}/repair-history', [EquipmentController::class, 'repairHistory']);
+    Route::post('equipment/{equipment}/repair-history', [EquipmentController::class, 'storeRepairHistory']);
     Route::apiResource('equipment', EquipmentController::class)->only(['index', 'store', 'show', 'update']);
     Route::get('analytics/summary', [AnalyticsController::class, 'summary']);
     Route::get('notifications', [NotificationController::class, 'index']);

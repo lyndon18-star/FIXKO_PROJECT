@@ -1,7 +1,7 @@
 # Fixko Figma Prototype Specification
 
 This document is the build sheet for a clickable Figma prototype of Fixko, the
-school facility reporting and ticket management system. It is based on the
+school facility reporting and report management system. It is based on the
 current implementation in `fixko-prototype-v2.html` and
 `frontend/app/page.tsx`.
 
@@ -45,32 +45,32 @@ Use components with variants for role, status, priority, and responsive state.
 
 | Frame | Size | Purpose |
 | --- | --- | --- |
-| `App / Student / Dashboard` | 1440 x 960 | Personal ticket summary and quick actions |
+| `App / Student / Dashboard` | 1440 x 960 | Personal report summary and quick actions |
 | `App / Student / New report` | 1440 x 960 | Facility issue submission form |
 | `App / Student / Duplicate warning` | 1440 x 960 | Similar open reports warning state |
-| `App / Student / My tickets` | 1440 x 960 | Student ticket list with filters |
-| `App / Student / Ticket detail` | 1440 x 960 | Ticket detail side panel with timeline and comments |
+| `App / Student / My reports` | 1440 x 960 | Student report list with filters |
+| `App / Student / Report detail` | 1440 x 960 | Report detail side panel with timeline and comments |
 | `App / Student / Notifications` | 1440 x 960 | Status and assignment notifications |
 | `App / Faculty / Dashboard` | 1440 x 960 | Faculty dashboard with department visibility |
-| `App / Faculty / Department tickets` | 1440 x 960 | Department-scoped ticket list |
-| `App / Faculty / Ticket detail` | 1440 x 960 | Faculty ticket detail and comment view |
+| `App / Faculty / Department reports` | 1440 x 960 | Department-scoped report list |
+| `App / Faculty / Report detail` | 1440 x 960 | Faculty report detail and comment view |
 
 ### Admin frames
 
 | Frame | Size | Purpose |
 | --- | --- | --- |
 | `App / Admin / All reports` | 1440 x 960 | All campus reports with status, priority, room, and technician |
-| `App / Admin / Ticket detail` | 1440 x 960 | Admin ticket detail with assignment and status controls |
+| `App / Admin / Report detail` | 1440 x 960 | Admin report detail with assignment and status controls |
 | `App / Admin / Analytics` | 1440 x 960 | Open vs resolved chart, most reported items, and resolution metrics |
 | `App / Admin / Inventory` | 1440 x 960 | Equipment list with room and condition |
 | `App / Admin / Users` | 1440 x 960 | Student, faculty, technician, and admin accounts |
 | `App / Admin / Rooms` | 1440 x 960 | Buildings, rooms, report frequency, and QR entry points |
 | `App / Admin / Notifications` | 1440 x 960 | Admin activity and system alerts |
 
-Create one mobile frame for the report form and one for the ticket detail:
+Create one mobile frame for the report form and one for the report detail:
 
 - `App / Student / New report / Mobile` - 390 x 844
-- `App / Student / Ticket detail / Mobile` - 390 x 844
+- `App / Student / Report detail / Mobile` - 390 x 844
 
 ## Visual foundations
 
@@ -128,15 +128,15 @@ Create these components on `02 Components`:
 - `Select`: default and open menu.
 - `Badge / Status`: New, Under review, In progress, Resolved.
 - `Badge / Priority`: Low, Medium, High, Critical.
-- `Ticket row`: desktop, compact, selected, unread.
-- `Ticket card`: mobile layout.
+- `Report row`: desktop, compact, selected, unread.
+- `Report card`: mobile layout.
 - `KPI card`: value, label, delta, icon.
 - `Progress bar`: indigo, teal, warning, success.
 - `Notification row`: unread and read.
 - `Modal`: auth, duplicate warning, confirmation.
-- `Side panel`: ticket detail open and closed.
+- `Side panel`: report detail open and closed.
 - `Timeline item`: completed, active, upcoming.
-- `Empty state`: no tickets and no notifications.
+- `Empty state`: no reports and no notifications.
 - `Table header` and `Table row`: admin data tables.
 
 ## Screen construction notes
@@ -151,7 +151,7 @@ Build the landing page in this order:
 4. Trust strip with live updates, transparent tracking, mobile reporting, and
    school-ready controls.
 5. Campus pulse cards.
-6. Feature cards: facility reporting, ticket tracking, analytics, priority and
+6. Feature cards: facility reporting, report tracking, analytics, priority and
    duplicate alerts, inventory and repair log.
 7. Interactive workflow preview with four states:
    `Report the issue`, `Review and assign`, `Repair in progress`, `Resolved`.
@@ -179,8 +179,8 @@ Use a centered modal over a dimmed landing page:
   sign-out.
 - Left sidebar on desktop; bottom navigation on mobile.
 - Main content uses a 1200 px max-width and 32 px desktop gutters.
-- Student navigation: Dashboard, New report, My tickets, Notifications.
-- Faculty navigation: Dashboard, New report, Department tickets, Notifications.
+- Student navigation: Dashboard, New report, My reports, Notifications.
+- Faculty navigation: Dashboard, New report, Department reports, Notifications.
 - Faculty action buttons use `field` green instead of indigo where appropriate.
 
 ### New report
@@ -192,31 +192,31 @@ Use a two-column desktop layout:
 - Right: `Your report` summary card, response-time note, and support contact.
 - Primary action: `Submit report`.
 - On submit, transition to the duplicate warning frame when matching reports
-  exist; otherwise transition to the ticket confirmation state.
+  exist; otherwise transition to the report confirmation state.
 
-### Ticket list
+### Report list
 
 Include:
 
 - Page title and description.
 - Search field.
 - Status and priority filters.
-- Ticket rows with ticket ID, issue, room, date, priority, status, and
+- Report rows with report ID, issue, room, date, priority, status, and
   assignee.
-- Selected row state opens the ticket detail side panel.
+- Selected row state opens the report detail side panel.
 - Empty state variant for a new user.
 
-### Ticket detail
+### Report detail
 
 Side panel contents:
 
-- Ticket ID, status badge, priority badge, and close button.
+- Report ID, status badge, priority badge, and close button.
 - Issue title, room, department, reporter, and created date.
 - Description and attached photo placeholder.
 - Status timeline: Submitted, Under review, In progress, Resolved.
 - Assigned technician block.
 - Comment thread with reply input.
-- For resolved tickets: five-star feedback control and optional comment.
+- For resolved reports: five-star feedback control and optional comment.
 
 ### Admin
 
@@ -224,7 +224,7 @@ Admin shell uses the same top bar but has the navigation:
 `All reports`, `Analytics`, `Inventory`, `Users`, `Rooms`, `Notifications`.
 
 The all-reports view is table-first. Include filter chips for status, priority,
-department, building, and technician. The ticket detail panel adds:
+department, building, and technician. The report detail panel adds:
 
 - Status select.
 - Priority select.
@@ -237,7 +237,7 @@ Analytics should show:
 - Open vs resolved monthly bar chart.
 - Most reported items horizontal bars.
 - Average resolution time KPI.
-- Tickets by building or department.
+- Reports by building or department.
 - Open, in progress, and resolved summary cards.
 
 Inventory should show equipment ID, item, room, department, condition, and
@@ -260,20 +260,20 @@ otherwise noted.
 | Student / Dashboard | `New report` | Student / New report |
 | Faculty / Dashboard | `New report` | Faculty / New report |
 | New report | `Submit report` | Duplicate warning |
-| Duplicate warning | `Continue anyway` | My tickets |
-| Duplicate warning | `View similar reports` | My tickets |
-| My tickets | Select ticket | Ticket detail |
-| Faculty / Department tickets | Select ticket | Faculty / Ticket detail |
-| Admin / All reports | Select report | Admin / Ticket detail |
-| Ticket detail | Close panel | Previous list frame |
-| Ticket detail | `Reply` | Same frame with new comment |
-| Admin / Ticket detail | `Save changes` | Same frame with updated status |
+| Duplicate warning | `Continue anyway` | My reports |
+| Duplicate warning | `View similar reports` | My reports |
+| My reports | Select report | Report detail |
+| Faculty / Department reports | Select report | Faculty / Report detail |
+| Admin / All reports | Select report | Admin / Report detail |
+| Report detail | Close panel | Previous list frame |
+| Report detail | `Reply` | Same frame with new comment |
+| Admin / Report detail | `Save changes` | Same frame with updated status |
 | Admin / Sidebar | `Analytics` | Admin / Analytics |
 | Admin / Sidebar | `Inventory` | Admin / Inventory |
 | Admin / Sidebar | `Users` | Admin / Users |
 | Admin / Sidebar | `Rooms` | Admin / Rooms |
 | Any app frame | Notification bell | Matching role / Notifications |
-| Resolved ticket | `Rate repair` | Same frame with feedback state |
+| Resolved report | `Rate repair` | Same frame with feedback state |
 
 Set the prototype starting point to `Public / Landing / Desktop`. Add a second
 starting point on `Public / Landing / Mobile` for responsive review.

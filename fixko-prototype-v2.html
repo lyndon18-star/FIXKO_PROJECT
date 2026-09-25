@@ -261,7 +261,7 @@
   .demo-panel{display:none;}
   .demo-panel.active{display:block;animation:fadeInSlide .4s ease;}
   @keyframes fadeInSlide{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-  .demo-mock-ticket{border:1px solid var(--border);border-radius:11px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .demo-mock-report{border:1px solid var(--border);border-radius:11px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
   .demo-mock-title{font-size:13.5px;font-weight:700;}
   .demo-mock-meta{font-size:11.5px;color:var(--muted);margin-top:3px;}
 
@@ -436,11 +436,11 @@
     .progress-track{width:100%;}
   }
 
-  .ticket-slip{
+  .report-slip{
     display:grid;grid-template-columns:auto 1fr auto auto;gap:16px;align-items:center;
     background:#fff;border:1px solid var(--border);padding:16px 18px;margin-bottom:10px;border-radius:11px;cursor:pointer;
   }
-  .ticket-slip:hover{box-shadow:var(--shadow-md);}
+  .report-slip:hover{box-shadow:var(--shadow-md);}
   .t-id{font-size:12px;color:var(--muted);font-weight:600;width:60px;}
   .t-main .t-title{font-size:14.5px;font-weight:700;margin-bottom:4px;}
   .t-main .t-meta{font-size:12px;color:var(--muted);}
@@ -594,7 +594,7 @@
     </div>
     <div class="card stat-card">
       <div class="stat-title"><span class="live-dot"></span>Campus status board</div>
-      <div class="stat-row"><span class="stat-label">Open tickets</span><span class="stat-num amber" data-count="42">0</span></div>
+      <div class="stat-row"><span class="stat-label">Open reports</span><span class="stat-num amber" data-count="42">0</span></div>
       <div class="stat-row"><span class="stat-label">In progress</span><span class="stat-num" data-count="18">0</span></div>
       <div class="stat-row"><span class="stat-label">Critical, unresolved</span><span class="stat-num rust" data-count="3">0</span></div>
       <div class="stat-row"><span class="stat-label">Resolved this term</span><span class="stat-num field" data-count="231">0</span></div>
@@ -609,7 +609,7 @@
       <div class="trust-item"><span class="ic">✓</span> Built for school email domains</div>
       <div class="trust-item"><span class="ic">✓</span> Mobile-friendly reporting</div>
       <div class="trust-item"><span class="ic">✓</span> Role-based access for students, faculty & admins</div>
-      <div class="trust-item"><span class="ic">✓</span> Exportable ticket & inventory data</div>
+      <div class="trust-item"><span class="ic">✓</span> Exportable report & inventory data</div>
     </div>
   </div>
 
@@ -638,7 +638,7 @@
       <article class="card pulse-card">
         <div class="pulse-card-top"><span class="pulse-label">Busiest location</span><span class="pulse-status" style="color:var(--warning);background:var(--warning-bg);">Watch</span></div>
         <div class="pulse-value">Room 204</div>
-        <p>3 open tickets are grouped together so admins can spot patterns.</p>
+        <p>3 open reports are grouped together so admins can spot patterns.</p>
         <div class="pulse-track"><div class="pulse-fill warning" style="width:58%;"></div></div>
       </article>
     </div>
@@ -653,10 +653,10 @@
     </div>
     <div class="feature-grid">
       <div class="card feature-card reveal"><div class="feature-icon" style="background:var(--primary-light);color:var(--primary);">✎</div><h3>Facility reporting</h3><p>Students and faculty report damage or missing items in seconds, with an optional photo attached.</p></div>
-      <div class="card feature-card reveal"><div class="feature-icon" style="background:var(--info-bg);color:var(--info);">◧</div><h3>Ticket tracking</h3><p>Every report moves through Pending, Under review, In progress, and Resolved — visible to everyone involved.</p></div>
+      <div class="card feature-card reveal"><div class="feature-icon" style="background:var(--info-bg);color:var(--info);">◧</div><h3>Report tracking</h3><p>Every report moves through Pending, Under review, In progress, and Resolved — visible to everyone involved.</p></div>
       <div class="card feature-card reveal"><div class="feature-icon" style="background:var(--warning-bg);color:var(--warning);">⌗</div><h3>QR code per room</h3><p>Print a QR code for each room that opens the report form pre-filled — no manual room selection needed.</p></div>
-      <div class="card feature-card reveal"><div class="feature-icon" style="background:var(--success-bg);color:var(--success);">📊</div><h3>Analytics dashboard</h3><p>See the most-reported items, tickets by department, and average resolution time at a glance.</p></div>
-      <div class="card feature-card reveal"><div class="feature-icon" style="background:var(--danger-bg);color:var(--danger);">!</div><h3>Priority & duplicate alerts</h3><p>Reports are flagged Low to Critical, and the system warns when similar tickets are already open.</p></div>
+      <div class="card feature-card reveal"><div class="feature-icon" style="background:var(--success-bg);color:var(--success);">📊</div><h3>Analytics dashboard</h3><p>See the most-reported items, reports by department, and average resolution time at a glance.</p></div>
+      <div class="card feature-card reveal"><div class="feature-icon" style="background:var(--danger-bg);color:var(--danger);">!</div><h3>Priority & duplicate alerts</h3><p>Reports are flagged Low to Critical, and the system warns when similar reports are already open.</p></div>
       <div class="card feature-card reveal"><div class="feature-icon" style="background:var(--primary-light);color:var(--primary);">🗄</div><h3>Inventory & repair log</h3><p>Track equipment condition per room and keep a running history of repairs and replacements.</p></div>
     </div>
   </section>
@@ -665,7 +665,7 @@
   <section class="section" id="how-it-works">
     <div class="section-head reveal">
       <span class="section-eyebrow">How it works</span>
-      <h2>From a broken chair to a closed ticket</h2>
+      <h2>From a broken chair to a closed report</h2>
       <p>A short walkthrough of what happens after something gets reported.</p>
     </div>
     <div class="guide reveal">
@@ -690,7 +690,7 @@
           <div class="guide-tab-num">3</div>
           <div style="flex:1;">
             <div class="guide-tab-title">Track it in real time</div>
-            <div class="guide-tab-sub">The reporter sees status updates and can message the technician directly on the ticket.</div>
+            <div class="guide-tab-sub">The reporter sees status updates and can message the technician directly on the report.</div>
             <div class="guide-progress-track"><div class="guide-progress-fill"></div></div>
           </div>
         </button>
@@ -714,12 +714,12 @@
         </div>
         <div class="demo-panel" data-panel="1">
           <div class="kpi-label" style="margin-bottom:14px;">Admin queue</div>
-          <div class="demo-mock-ticket"><div><div class="demo-mock-title">Aircon leaking onto floor</div><div class="demo-mock-meta">Room 204 · just now</div></div><span class="badge pr-critical">critical</span></div>
+          <div class="demo-mock-report"><div><div class="demo-mock-title">Aircon leaking onto floor</div><div class="demo-mock-meta">Room 204 · just now</div></div><span class="badge pr-critical">critical</span></div>
           <div class="dup-warning show" style="margin-top:6px;">⚠ 2 similar reports already open for Room 204.</div>
           <div class="field-group" style="margin-top:16px;"><label>Assign technician</label><select><option>R. Aquino</option><option>L. Ferrer</option></select></div>
         </div>
         <div class="demo-panel" data-panel="2">
-          <div class="kpi-label" style="margin-bottom:14px;">Ticket FX-1042</div>
+          <div class="kpi-label" style="margin-bottom:14px;">Report FX-1042</div>
           <div class="status-track" style="margin-bottom:16px;">
             <div class="status-step done">Pending</div><div class="status-step done">Review</div><div class="status-step done">Progress</div><div class="status-step">Resolved</div>
           </div>
@@ -727,7 +727,7 @@
           <div class="comment"><b>Maria Santos</b>Thank you, it's gotten worse since this morning.</div>
         </div>
         <div class="demo-panel" data-panel="3">
-          <div class="kpi-label" style="margin-bottom:14px;">Ticket FX-1042 · Resolved</div>
+          <div class="kpi-label" style="margin-bottom:14px;">Report FX-1042 · Resolved</div>
           <div class="status-track" style="margin-bottom:16px;">
             <div class="status-step done">Pending</div><div class="status-step done">Review</div><div class="status-step done">Progress</div><div class="status-step done">Resolved</div>
           </div>
@@ -748,11 +748,11 @@
     <div class="roles-grid">
       <div class="card role-card reveal">
         <h3>Students</h3>
-        <div class="role-tagline">Report and track your own tickets</div>
+        <div class="role-tagline">Report and track your own reports</div>
         <ul>
           <li><span class="check">✓</span>Submit a report with photo and priority in under a minute</li>
           <li><span class="check">✓</span>See the status of everything you've reported</li>
-          <li><span class="check">✓</span>Message the technician on your ticket</li>
+          <li><span class="check">✓</span>Message the technician on your report</li>
           <li><span class="check">✓</span>Rate the repair once it's resolved</li>
         </ul>
       </div>
@@ -760,7 +760,7 @@
         <h3>Faculty</h3>
         <div class="role-tagline">Everything students get, plus department visibility</div>
         <ul>
-          <li><span class="check">✓</span>See every ticket reported in your department</li>
+          <li><span class="check">✓</span>See every report reported in your department</li>
           <li><span class="check">✓</span>Filter by status to spot what's stalled</li>
           <li><span class="check">✓</span>Same fast reporting form as students</li>
           <li><span class="check">✓</span>Get notified the moment status changes</li>
@@ -771,9 +771,9 @@
         <div class="role-tagline">Full visibility and control across campus</div>
         <ul>
           <li><span class="check">✓</span>See every report campus-wide with live progress</li>
-          <li><span class="check">✓</span>Assign technicians and update ticket status</li>
+          <li><span class="check">✓</span>Assign technicians and update report status</li>
           <li><span class="check">✓</span>Track inventory condition and repair history</li>
-          <li><span class="check">✓</span>Export tickets and view analytics by department</li>
+          <li><span class="check">✓</span>Export reports and view analytics by department</li>
         </ul>
       </div>
     </div>
@@ -801,7 +801,7 @@
           <div class="status-step done">Submitted</div><div class="status-step done">Under review</div><div class="status-step">Verified</div>
         </div>
         <p style="font-size:13.5px;color:var(--text-soft);line-height:1.65;margin:0 0 14px;">Your account is created right away in a <b>pending</b> state so nothing blocks your sign-up. An admin checks your ID photo against the ID number and department records, then approves the account — you'll get a notification either way.</p>
-        <p style="font-size:12.5px;color:var(--muted);line-height:1.6;margin:0;">This keeps department ticket views limited to actual faculty, and stops anyone from posing as a teacher to see other departments' reports.</p>
+        <p style="font-size:12.5px;color:var(--muted);line-height:1.6;margin:0;">This keeps department report views limited to actual faculty, and stops anyone from posing as a teacher to see other departments' reports.</p>
       </div>
     </div>
   </section>
@@ -823,11 +823,11 @@
       </div>
       <div class="faq-item reveal">
         <button class="faq-q" onclick="toggleFaq(this)"><span>What do faculty need, and why is it more than students?</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">Faculty email, Teacher/Employee ID number, and a photo of your school ID. Faculty accounts can see every ticket in a department, so Fixko confirms the person behind the account before granting that access.</div></div>
+        <div class="faq-a"><div class="faq-a-inner">Faculty email, Teacher/Employee ID number, and a photo of your school ID. Faculty accounts can see every report in a department, so Fixko confirms the person behind the account before granting that access.</div></div>
       </div>
       <div class="faq-item reveal">
         <button class="faq-q" onclick="toggleFaq(this)"><span>Why does the report form ask for my ID again if I'm already signed in?</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">It's a verification step on every ticket, not just your profile. The field is pre-filled from your account but stays editable so you actively confirm it before submitting.</div></div>
+        <div class="faq-a"><div class="faq-a-inner">It's a verification step on every report, not just your profile. The field is pre-filled from your account but stays editable so you actively confirm it before submitting.</div></div>
       </div>
       <div class="faq-item reveal">
         <button class="faq-q" onclick="toggleFaq(this)"><span>Can I report anonymously?</span><span class="faq-icon">+</span></button>
@@ -835,11 +835,11 @@
       </div>
       <div class="faq-item reveal">
         <button class="faq-q" onclick="toggleFaq(this)"><span>What happens after I submit a report?</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">It's checked for duplicates, added to the admin queue, and moves through Pending → Under review → In progress → Resolved. You'll see the status update on your ticket as it moves.</div></div>
+        <div class="faq-a"><div class="faq-a-inner">It's checked for duplicates, added to the admin queue, and moves through Pending → Under review → In progress → Resolved. You'll see the status update on your report as it moves.</div></div>
       </div>
       <div class="faq-item reveal">
         <button class="faq-q" onclick="toggleFaq(this)"><span>Can admins export the data?</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">Yes — tickets and inventory can be exported to CSV or Excel from the admin dashboard.</div></div>
+        <div class="faq-a"><div class="faq-a-inner">Yes — reports and inventory can be exported to CSV or Excel from the admin dashboard.</div></div>
       </div>
     </div>
   </section>
@@ -862,7 +862,7 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <div class="brand"><div class="brand-mark">FX</div><div class="brand-name">Fixko</div></div>
-        <p>Facility reporting and ticket management built for schools — from the first report to the repair log.</p>
+        <p>Facility reporting and report management built for schools — from the first report to the repair log.</p>
         <div class="footer-social">
           <a href="#" aria-label="Email">✉</a>
           <a href="#" aria-label="Facebook">f</a>
@@ -904,7 +904,7 @@
         </ul>
       </div>
     </div>
-    <div class="footer-note">This page is a design prototype for Fixko's facility reporting system. Figures shown on this page (ticket counts, resolution times, ratings) are illustrative sample data for demonstration purposes and do not represent a live deployment.</div>
+    <div class="footer-note">This page is a design prototype for Fixko's facility reporting system. Figures shown on this page (report counts, resolution times, ratings) are illustrative sample data for demonstration purposes and do not represent a live deployment.</div>
     <div class="footer-bottom">
       <div>© 2026 Fixko. Built for schools.</div>
       <div class="footer-badge">Prototype build · not connected to a live database · <a onclick="openAuth('admin')" style="cursor:pointer;text-decoration:underline;">Staff &amp; admin portal</a></div>
@@ -953,7 +953,7 @@
 
     <!-- SIGN UP: FACULTY -->
     <div id="signupFaculty" class="hidden">
-      <div class="verify-note">🪪 Faculty accounts are verified by an admin before full access is granted — this protects department-level ticket data.</div>
+      <div class="verify-note">🪪 Faculty accounts are verified by an admin before full access is granted — this protects department-level report data.</div>
       <div class="field-group"><label>Full name</label><input type="text" placeholder="Mrs. Bautista"></div>
       <div class="field-group"><label>Faculty email</label><input type="email" placeholder="you@school.edu.ph">
         <div class="field-hint">Must match your school's staff email domain — checked automatically.</div></div>
@@ -1089,7 +1089,7 @@ const rooms = [
   {id:'FAC-LNG', name:'Faculty Lounge', building:'Main Building', dept:'Admin', open:1},
   {id:'LIB', name:'Library', building:'Main Building', dept:'General', open:2},
 ];
-const tickets = [
+const reports = [
   {id:'FX-1042', title:'Aircon leaking onto floor', room:'Room 204', reporter:'Maria Santos', reporterId:'2022-01187', priority:'critical', status:'progress', dept:'Science', tech:'R. Aquino', created:'2h ago', desc:'Water pooling under the unit since this morning, getting worse.'},
   {id:'FX-1041', title:'Projector bulb burned out', room:'Room 101', reporter:'Juan Dela Cruz', reporterId:'2023-04521', priority:'medium', status:'review', dept:'General', tech:'Unassigned', created:'5h ago', desc:'Screen is completely dark, bulb likely needs replacing.'},
   {id:'FX-1039', title:'3 chairs with broken legs', room:'Room 204', reporter:'Ana Reyes', reporterId:'2021-09933', priority:'low', status:'pending', dept:'Science', tech:'Unassigned', created:'Yesterday', desc:'Chairs near the back row are wobbly, minor risk.'},
@@ -1115,7 +1115,7 @@ const usersList = [
   {name:'R. Aquino', id:'T-002', role:'Admin', dept:'Maintenance', email:'aquino@school.edu.ph'},
 ];
 const notifications = [
-  {text:'Your ticket FX-1041 moved to Under review.', time:'20 min ago', unread:true},
+  {text:'Your report FX-1041 moved to Under review.', time:'20 min ago', unread:true},
   {text:'FX-1042 was marked Critical and assigned to R. Aquino.', time:'2h ago', unread:true},
   {text:'FX-1029 was marked Resolved — rate the repair.', time:'1 week ago', unread:false},
 ];
@@ -1203,8 +1203,8 @@ function signOut(){
 
 /* ===================== NAVBAR ===================== */
 const navConfig = {
-  student: [['dashboard','◧','Dashboard'],['report','✎','New report'],['tickets','📋','My tickets'],['notifications','🔔','Notifications']],
-  faculty: [['dashboard','◧','Dashboard'],['report','✎','New report'],['tickets','📋','Department tickets'],['notifications','🔔','Notifications']],
+  student: [['dashboard','◧','Dashboard'],['report','✎','New report'],['reports','📋','My reports'],['notifications','🔔','Notifications']],
+  faculty: [['dashboard','◧','Dashboard'],['report','✎','New report'],['reports','📋','Department reports'],['notifications','🔔','Notifications']],
   admin: [['dashboard','◧','All reports'],['analytics','📊','Analytics'],['inventory','🗄','Inventory'],['users','👥','Users'],['rooms','🏢','Rooms'],['notifications','🔔','Notifications']]
 };
 function buildNavbar(){
@@ -1224,14 +1224,14 @@ function buildNavbar(){
 }
 
 const pageTitles = {
-  dashboard: {student:['Dashboard',"Welcome back — here's what's happening."], faculty:['Dashboard',"Welcome back — here's what's happening."], admin:['All reports','Every ticket across campus, with live progress.']},
+  dashboard: {student:['Dashboard',"Welcome back — here's what's happening."], faculty:['Dashboard',"Welcome back — here's what's happening."], admin:['All reports','Every report across campus, with live progress.']},
   report: ['New report','Tell us what\'s broken, missing, or needs attention.'],
-  tickets: ['Tickets','Track every report from submission to resolution.'],
+  reports: ['Reports','Track every report from submission to resolution.'],
   notifications: ['Notifications','Everything that needs your attention.'],
   analytics: ['Analytics','Patterns across buildings, departments, and equipment.'],
   inventory: ['Inventory','Every tracked item, its room, and its condition.'],
   users: ['Users','Accounts registered across every role.'],
-  rooms: ['Rooms & buildings','Open tickets and printable QR codes per room.'],
+  rooms: ['Rooms & buildings','Open reports and printable QR codes per room.'],
 };
 function go(page){
   document.querySelectorAll('.nav-link').forEach(el=>el.classList.toggle('active', el.dataset.page===page));
@@ -1240,7 +1240,7 @@ function go(page){
   document.getElementById('pageTitle').textContent = t[0];
   document.getElementById('pageSub').textContent = t[1];
   document.getElementById('pageHeadActions').innerHTML =
-    (page==='dashboard'||page==='tickets') && currentRole!=='admin'
+    (page==='dashboard'||page==='reports') && currentRole!=='admin'
       ? `<button class="btn ${currentRole==='faculty'?'field':''}" onclick="go('report')">＋ New report</button>` : '';
   document.getElementById('contentArea').innerHTML = renderPage(page);
 }
@@ -1255,11 +1255,11 @@ function progressBar(status){
     <div class="progress-caption">${statusLabel[status]}</div>
   </div>`;
 }
-function myTickets(){ return tickets.filter(t=>t.reporterId === currentUser.id); }
-function deptTickets(){ return tickets.filter(t=>t.dept === 'Science' || t.reporterId === currentUser.id); }
+function myReports(){ return reports.filter(t=>t.reporterId === currentUser.id); }
+function deptReports(){ return reports.filter(t=>t.dept === 'Science' || t.reporterId === currentUser.id); }
 
-function ticketSlip(t){
-  return `<div class="ticket-slip" onclick="openTicket('${t.id}')">
+function reportSlip(t){
+  return `<div class="report-slip" onclick="openReport('${t.id}')">
     <div class="t-id">${t.id}</div>
     <div class="t-main"><div class="t-title">${t.title}</div><div class="t-meta">${t.room} · ${t.dept} · ${t.created}${currentRole!=='student' ? ' · '+t.reporter : ''}</div></div>
     ${priorityBadge(t.priority)}
@@ -1267,7 +1267,7 @@ function ticketSlip(t){
   </div>`;
 }
 function reportRow(t){
-  return `<div class="report-row" onclick="openTicket('${t.id}')">
+  return `<div class="report-row" onclick="openReport('${t.id}')">
     <div class="r-id">${t.id}</div>
     <div class="r-main"><div class="r-title">${t.title}</div><div class="r-meta">${t.room} · ${t.dept} · reported by ${t.reporter} · ${t.created}</div></div>
     ${priorityBadge(t.priority)}
@@ -1279,7 +1279,7 @@ function reportRow(t){
 function emptyState(title, sub){
   return `<div class="card empty"><div class="t">${title}</div><div class="s">${sub}</div></div>`;
 }
-function filteredTickets(source){
+function filteredReports(source){
   return source.filter(t =>
     (activeStatusFilter==='all' || t.status===activeStatusFilter) &&
     (activePriorityFilter==='all' || t.priority===activePriorityFilter) &&
@@ -1291,7 +1291,7 @@ function filteredTickets(source){
 function renderPage(page){
   if(page==='dashboard') return currentRole==='admin' ? renderAdminDashboard() : renderUserDashboard();
   if(page==='report') return renderReportForm();
-  if(page==='tickets') return renderTicketsPage();
+  if(page==='reports') return renderReportsPage();
   if(page==='notifications') return renderNotifications();
   if(page==='analytics') return renderAnalytics();
   if(page==='inventory') return renderInventory();
@@ -1302,7 +1302,7 @@ function renderPage(page){
 
 /* ---- Student / Faculty dashboard ---- */
 function renderUserDashboard(){
-  const mine = currentRole==='student' ? myTickets() : deptTickets();
+  const mine = currentRole==='student' ? myReports() : deptReports();
   const open = mine.filter(t=>t.status!=='resolved').length;
   const resolved = mine.filter(t=>t.status==='resolved').length;
   return `
@@ -1312,20 +1312,20 @@ function renderUserDashboard(){
     <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Critical open</span><span class="kpi-icon" style="background:var(--danger-bg);color:var(--danger);">!</span></div><div class="num">${mine.filter(t=>t.priority==='critical'&&t.status!=='resolved').length}</div><div class="delta warn">Needs attention</div></div>
     <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Avg. response</span><span class="kpi-icon" style="background:var(--info-bg);color:var(--info);">⏱</span></div><div class="num">1.8d</div><div class="delta">Last 5 reports</div></div>
   </div>
-  <div class="section-title"><h2>${currentRole==='faculty' ? 'Department tickets' : 'Your recent reports'}</h2></div>
-  ${mine.slice(0,5).map(ticketSlip).join('') || emptyState('No reports yet','Submit your first facility report to see it here.')}
+  <div class="section-title"><h2>${currentRole==='faculty' ? 'Department reports' : 'Your recent reports'}</h2></div>
+  ${mine.slice(0,5).map(reportSlip).join('') || emptyState('No reports yet','Submit your first facility report to see it here.')}
   `;
 }
 
 /* ---- Admin dashboard: ALL REPORTS with progress (main differentiator) ---- */
 function renderAdminDashboard(){
-  const open = tickets.filter(t=>t.status!=='resolved').length;
-  const critical = tickets.filter(t=>t.priority==='critical'&&t.status!=='resolved');
-  const list = filteredTickets(tickets);
+  const open = reports.filter(t=>t.status!=='resolved').length;
+  const critical = reports.filter(t=>t.priority==='critical'&&t.status!=='resolved');
+  const list = filteredReports(reports);
   return `
-  ${critical.length ? `<div class="dup-warning show" style="margin-bottom:20px;">⚠ ${critical.length} critical ticket${critical.length>1?'s':''} still open — ${critical.map(t=>t.id).join(', ')}.</div>` : ''}
+  ${critical.length ? `<div class="dup-warning show" style="margin-bottom:20px;">⚠ ${critical.length} critical report${critical.length>1?'s':''} still open — ${critical.map(t=>t.id).join(', ')}.</div>` : ''}
   <div class="grid-4">
-    <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Total reports</span><span class="kpi-icon" style="background:var(--primary-light);color:var(--primary);">◧</span></div><div class="num">${tickets.length}</div><div class="delta">All time</div></div>
+    <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Total reports</span><span class="kpi-icon" style="background:var(--primary-light);color:var(--primary);">◧</span></div><div class="num">${reports.length}</div><div class="delta">All time</div></div>
     <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Open</span><span class="kpi-icon" style="background:var(--warning-bg);color:var(--warning);">◔</span></div><div class="num">${open}</div><div class="delta">Needs action</div></div>
     <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Resolved this term</span><span class="kpi-icon" style="background:var(--success-bg);color:var(--success);">✓</span></div><div class="num">231</div><div class="delta up">+18 this week</div></div>
     <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Avg. resolution</span><span class="kpi-icon" style="background:var(--info-bg);color:var(--info);">⏱</span></div><div class="num">2.4d</div><div class="delta up">−0.3d vs last month</div></div>
@@ -1333,7 +1333,7 @@ function renderAdminDashboard(){
 
   <div class="section-title"><h2>All reports</h2></div>
   <div class="filters">
-    <input class="search-input" placeholder="Search by ticket, room, or reporter..." oninput="setSearch(this.value)" value="${searchQuery}">
+    <input class="search-input" placeholder="Search by report, room, or reporter..." oninput="setSearch(this.value)" value="${searchQuery}">
     ${['all','pending','review','progress','resolved'].map(s=>`<button class="filter-chip ${activeStatusFilter===s?'active':''}" onclick="setStatusFilter('${s}')">${s==='all'?'All statuses':statusLabel[s]}</button>`).join('')}
     <div class="filters-right">
       ${['all','critical','high','medium','low'].map(p=>`<button class="filter-chip ${activePriorityFilter===p?'active':''}" onclick="setPriorityFilter('${p}')">${p==='all'?'All priorities':p}</button>`).join('')}
@@ -1365,31 +1365,31 @@ function renderReportForm(){
       <div class="priority-select">${['low','medium','high','critical'].map(p=>`<div class="priority-opt sel-${p} ${p==='medium'?'selected':''}" onclick="setPriority(this)">${p}</div>`).join('')}</div>
     </div>
     <div class="field-group"><label>Photo (optional)</label><div class="upload-box">Drop a photo here, or click to upload</div></div>
-    <div class="dup-warning" id="dupWarning">⚠ 3 similar reports already open for this room. Submitting anyway will still create a new ticket.</div>
+    <div class="dup-warning" id="dupWarning">⚠ 3 similar reports already open for this room. Submitting anyway will still create a new report.</div>
     <button class="btn ${currentRole==='faculty'?'field':''}" style="margin-top:18px;width:100%;justify-content:center;" onclick="submitReport()">Submit report</button>
   </div>`;
 }
 function setPriority(el){ el.parentElement.querySelectorAll('.priority-opt').forEach(x=>x.classList.remove('selected')); el.classList.add('selected'); }
 function checkDuplicates(){ document.getElementById('dupWarning').classList.toggle('show', document.getElementById('roomSelect').value === 'Room 204'); }
-function submitReport(){ alert('Report submitted — ticket FX-1043 created and routed to the maintenance queue.'); go('tickets'); }
+function submitReport(){ alert('Report submitted — report FX-1043 created and routed to the maintenance queue.'); go('reports'); }
 
-/* ---- Tickets page (student / faculty) ---- */
-function renderTicketsPage(){
-  const source = currentRole==='student' ? myTickets() : deptTickets();
-  const list = filteredTickets(source);
+/* ---- Reports page (student / faculty) ---- */
+function renderReportsPage(){
+  const source = currentRole==='student' ? myReports() : deptReports();
+  const list = filteredReports(source);
   return `
   <div class="filters">
-    <input class="search-input" placeholder="Search tickets..." oninput="setSearch(this.value)" value="${searchQuery}">
+    <input class="search-input" placeholder="Search reports..." oninput="setSearch(this.value)" value="${searchQuery}">
     ${['all','pending','review','progress','resolved'].map(s=>`<button class="filter-chip ${activeStatusFilter===s?'active':''}" onclick="setStatusFilter2('${s}')">${s==='all'?'All':statusLabel[s]}</button>`).join('')}
   </div>
-  ${list.map(ticketSlip).join('') || emptyState('No tickets match this filter','Try a different status.')}
+  ${list.map(reportSlip).join('') || emptyState('No reports match this filter','Try a different status.')}
   `;
 }
-function setStatusFilter2(s){ activeStatusFilter = s; go('tickets'); }
+function setStatusFilter2(s){ activeStatusFilter = s; go('reports'); }
 
-/* ---- Ticket side panel ---- */
-function openTicket(id){
-  const t = tickets.find(x=>x.id===id);
+/* ---- Report side panel ---- */
+function openReport(id){
+  const t = reports.find(x=>x.id===id);
   const idx = statuses.indexOf(t.status);
   document.getElementById('sidePanel').innerHTML = `
     <button class="side-close" onclick="closeSidePanel()">✕</button>
@@ -1414,7 +1414,7 @@ function openTicket(id){
     </div>
     ${t.status==='resolved' ? `<div class="side-block"><label>Feedback</label><div class="stars">★★★★☆</div><div style="font-size:12.5px;color:var(--muted);margin-top:6px;">"Fixed quickly, thanks!" — ${t.reporter}</div></div>` : ''}
     <div class="side-block"><label>Activity log</label>
-      <div style="font-size:12px;color:var(--muted);line-height:2;">${t.created} — Ticket created by ${t.reporter}<br>${t.tech!=='Unassigned' ? `Assigned to ${t.tech}<br>` : ''}Status set to "${statusLabel[t.status]}"</div>
+      <div style="font-size:12px;color:var(--muted);line-height:2;">${t.created} — Report created by ${t.reporter}<br>${t.tech!=='Unassigned' ? `Assigned to ${t.tech}<br>` : ''}Status set to "${statusLabel[t.status]}"</div>
     </div>
   `;
   document.getElementById('sideOverlay').classList.add('show');
@@ -1492,7 +1492,7 @@ function renderRooms(){
   return `<div class="grid-3">${rooms.map(r=>`
     <div class="card room-card">
       <div class="room-row"><div><div class="room-title">${r.name}</div><div class="room-meta">${r.building} · ${r.dept}</div></div><div class="qr-box" title="Printable QR"></div></div>
-      <div style="font-size:12.5px;color:${r.open?'var(--danger)':'var(--success)'};font-weight:700;">${r.open} open ticket${r.open!==1?'s':''}</div>
+      <div style="font-size:12.5px;color:${r.open?'var(--danger)':'var(--success)'};font-weight:700;">${r.open} open report${r.open!==1?'s':''}</div>
       <button class="btn ghost sm">Print QR label</button>
     </div>`).join('')}</div>`;
 }

@@ -8,6 +8,6 @@ class Equipment extends Model
     protected $fillable = ['room_id','name','category','asset_tag','condition','quantity','description'];
     protected $casts = ['quantity' => 'integer'];
     public function room() { return $this->belongsTo(Room::class); }
-    public function repairLogs() { return $this->hasMany(RepairLog::class); }
-    public function tickets() { return $this->hasMany(Ticket::class); }
+    public function repairHistory() { return $this->hasMany(RepairHistory::class); }
+    public function reports() { return $this->hasMany(Report::class); }
 }

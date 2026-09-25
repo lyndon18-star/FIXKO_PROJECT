@@ -165,7 +165,7 @@ fixko/
 - Password reset functionality
 
 ### 2. Core Modules
-- **Ticket Management**: CRUD operations, status transitions, priority handling
+- **Report Management**: CRUD operations, status transitions, priority handling
 - **User Management**: Role management, profile updates
 - **Inventory Management**: Equipment tracking, condition monitoring
 - **Reporting System**: Form submission with validation, file uploads
@@ -175,7 +175,7 @@ fixko/
 ### 3. Real-time Features (Optional)
 - WebSocket connections for live updates
 - Notification broadcasting
-- Live ticket status updates
+- Live report status updates
 
 ### 4. File Handling
 - Secure file upload for photos
