@@ -11,8 +11,25 @@ class AuthController extends Controller
 {
     public function signup(Request $request)
     {
-        $data = $request->validate(['name'=>'required|string|max:120','email'=>'required|email|unique:users,email','school_id'=>'required|string|max:64|unique:users,school_id','password'=>['required','confirmed',PasswordRule::min(8)->mixedCase()->numbers()->symbols()],'role'=>'nullable|in:user']);
-        $user = User::create(array_merge($data, ['role' => $data['role'] ?? 'user']));
+        $data = $request->validate([
+            'name' => 'nullable|string|max:120',
+            'first_name' => 'nullable|string|max:60',
+            'last_name' => 'nullable|string|max:60',
+            'middle_name' => 'nullable|string|max:60',
+            'email' => 'required|email|unique:users,email',
+            'school_id' => 'required|string|max:64|unique:users,school_id',
+            'password' => ['required', 'confirmed', PasswordRule::min(8)->mixedCase()->numbers()->symbols()],
+            'role' => 'nullable|in:user',
+        ]);
+        $firstName = trim($data['first_name'] ?? '');
+        $middleName = trim($data['middle_name'] ?? '');
+        $lastName = trim($data['last_name'] ?? '');
+        $name = $data['name'] ?? trim(implode(' ', array_filter([$firstName, $middleName, $lastName])));
+        if ($name === '') return response()->json(['message' => 'Please provide your name.', 'code' => 'VALIDATION_ERROR', 'errors' => ['name' => ['The name field is required.']]], 422);
+        $user = User::create(array_merge($data, [
+            'name' => $name,
+            'role' => $data['role'] ?? 'user',
+        ]));
         Log::info('User signup completed.', ['user_id' => $user->id, 'email' => $user->email]);
         return response()->json(['user' => $user, 'token' => $user->createToken('fixko-web')->plainTextToken], 201);
     }

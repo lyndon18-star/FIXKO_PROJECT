@@ -2,6 +2,7 @@ node_modules/
 .next/
 dist/
 build/
+*.tsbuildinfo
 vendor/
 backend/.phpunit.result.cache
 backend/storage/*

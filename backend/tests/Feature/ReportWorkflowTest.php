@@ -94,6 +94,33 @@ class ReportWorkflowTest extends TestCase
         ])->assertUnprocessable();
     }
 
+    public function test_signup_stores_separated_name_fields_and_builds_display_name(): void
+    {
+        $response = $this->postJson('/api/auth/signup', [
+            'first_name' => 'Juan',
+            'last_name' => 'Dela Cruz',
+            'middle_name' => 'Santos',
+            'email' => 'juan@example.com',
+            'school_id' => 'USR-002',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('user.first_name', 'Juan')
+            ->assertJsonPath('user.last_name', 'Dela Cruz')
+            ->assertJsonPath('user.middle_name', 'Santos')
+            ->assertJsonPath('user.name', 'Juan Santos Dela Cruz');
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'juan@example.com',
+            'first_name' => 'Juan',
+            'last_name' => 'Dela Cruz',
+            'middle_name' => 'Santos',
+            'name' => 'Juan Santos Dela Cruz',
+        ]);
+    }
+
     public function test_login_returns_a_consistent_error_for_invalid_credentials(): void
     {
         User::factory()->create(['email' => 'user@example.com', 'password' => 'password123']);

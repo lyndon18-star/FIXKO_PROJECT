@@ -12,7 +12,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable implements CanResetPasswordContract
 {
     use HasApiTokens, HasFactory, Notifiable, CanResetPassword;
-    protected $fillable = ['name', 'email', 'school_id', 'password', 'role', 'department'];
+    protected $fillable = ['name', 'first_name', 'last_name', 'middle_name', 'email', 'school_id', 'password', 'role', 'department'];
     protected $hidden = ['password', 'remember_token'];
     protected $casts = ['email_verified_at' => 'datetime', 'password' => 'hashed'];
     public function sendPasswordResetNotification($token): void

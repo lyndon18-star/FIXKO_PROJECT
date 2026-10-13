@@ -87,7 +87,20 @@ class ReportController extends Controller
         $data = $request->validate(['status' => ['required','in:pending,under_review,in_progress,resolved']]);
         $old = $report->status;
         $report->update(['status' => $data['status'], 'resolved_at' => $data['status'] === 'resolved' ? now() : null]);
-        if ($old !== $report->status) $report->statusHistory()->create(['old_status' => $old, 'new_status' => $report->status, 'changed_by' => $request->user()->id]);
+        if ($old !== $report->status) {
+            $report->statusHistory()->create(['old_status' => $old, 'new_status' => $report->status, 'changed_by' => $request->user()->id]);
+            $statusLabels = ['pending' => 'pending', 'under_review' => 'under review', 'in_progress' => 'in progress', 'resolved' => 'resolved'];
+            if ($report->reporter_id !== $request->user()->id) {
+                $message = $report->status === 'resolved'
+                    ? "Report {$report->id} was resolved."
+                    : "Report {$report->id} is now " . ($statusLabels[$report->status] ?? $report->status) . ".";
+                Notification::create([
+                    'user_id' => $report->reporter_id,
+                    'message' => $message,
+                    'related_report_id' => $report->id,
+                ]);
+            }
+        }
         return response()->json($report->fresh()->load(['room','equipment','reporter','comments.author','feedback']));
     }
 
@@ -95,7 +108,23 @@ class ReportController extends Controller
     {
         $this->authorizeReport($request, $report);
         $data = $request->validate(['message' => ['required','string','max:2000']]);
-        return response()->json($report->comments()->create(['author_id' => $request->user()->id, 'message' => $data['message']])->load('author'), 201);
+        $comment = $report->comments()->create(['author_id' => $request->user()->id, 'message' => $data['message']])->load('author');
+        if ($report->reporter_id !== $request->user()->id) {
+            Notification::create([
+                'user_id' => $report->reporter_id,
+                'message' => "New message from {$request->user()->name} on report {$report->id}.",
+                'related_report_id' => $report->id,
+            ]);
+        } else {
+            User::where('role', 'admin')->get()->each(function (User $admin) use ($report, $request) {
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'message' => "New message from {$request->user()->name} on report {$report->id}.",
+                    'related_report_id' => $report->id,
+                ]);
+            });
+        }
+        return response()->json($comment, 201);
     }
 
     public function feedback(Request $request, Report $report)

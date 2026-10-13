@@ -233,6 +233,16 @@ export function getNotifications() {
   return request<{ data: ApiNotification[] }>("/notifications");
 }
 
+export function markNotificationRead(notificationId: number) {
+  return request<ApiNotification>(`/notifications/${notificationId}/read`, {
+    method: "PATCH",
+  });
+}
+
+export function getUsers() {
+  return request<Array<ApiUser & { reports_count?: number; created_at?: string }>>("/users");
+}
+
 export function updateReportStatus(reportId: string, status: "pending" | "under_review" | "in_progress" | "resolved") {
   return request<ApiReport>(`/reports/${reportId}/status`, {
     method: "PATCH",

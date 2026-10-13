@@ -2,18 +2,22 @@
   "name": "fixko-frontend",
   "private": true,
   "version": "0.1.0",
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
+  "overrides": {
+    "postcss": "^8.5.28"
+  },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
     "bootstrap": "^5.3.3",
     "framer-motion": "^11.15.0",
     "gsap": "^3.12.5",
-    "next": "^14.2.16",
+    "next": "^15.5.26",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -22,7 +26,8 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.49",
+    "playwright": "^1.63.0",
+    "postcss": "^8.5.28",
     "tailwindcss": "^3.4.16",
     "typescript": "^5.7.2"
   }

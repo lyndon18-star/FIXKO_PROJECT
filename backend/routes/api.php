@@ -6,6 +6,7 @@ use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
@@ -31,4 +32,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('analytics/summary', [AnalyticsController::class, 'summary']);
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::patch('notifications/{notification}/read', [NotificationController::class, 'markRead']);
+    Route::get('users', [UserController::class, 'index']);
 });

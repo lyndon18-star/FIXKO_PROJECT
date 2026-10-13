@@ -26,9 +26,13 @@ Use only one database setup path: either import the SQL schema or run
 same database.
 
 The API is available at `http://localhost:8000/api`. Open phpMyAdmin at
-`http://localhost/phpmyadmin` to inspect the `fixko` schema. Configure the
-frontend origin in `SANCTUM_STATEFUL_DOMAINS` and `config/cors.php`. API token
-authentication uses `Authorization: Bearer <token>`.
+`http://localhost/phpmyadmin` to inspect the `fixko` schema. Local CORS origins
+for Next.js (`http://localhost:3000` and `http://127.0.0.1:3000`) and
+React Router/Vite (`http://localhost:5173` and `http://127.0.0.1:5173`) are
+allowed. If you use a different origin, add it to
+`config/cors.php`; add it to `SANCTUM_STATEFUL_DOMAINS` as well when using
+cookie-based Sanctum authentication. API token authentication uses
+`Authorization: Bearer <token>`.
 
 ## Database design
 
