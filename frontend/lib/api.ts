@@ -177,7 +177,9 @@ export function login(email: string, password: string) {
 }
 
 export function signup(input: {
-  name: string;
+  last_name: string;
+  first_name: string;
+  middle_name?: string;
   email: string;
   school_id: string;
   password: string;

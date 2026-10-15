@@ -2905,3 +2905,99 @@ html[data-theme="dark"] .theme-root {
   .student-welcome-stats strong, .student-kicker, .badge, .admin-stat-icon, .operations-metric, .operations-metric strong, .admin-attention-row, .admin-empty-state, .admin-empty-state > span { animation: none !important; opacity: 1 !important; transform: none !important; }
   .admin-welcome-card h1::after, .student-welcome h2::after, .my-report-progress::after, .report-progress-track::after, .student-progress-track::after { animation: none !important; }
 }
+
+/* Chrome/Safari autofill (paste or saved credentials) forces a light background.
+   Keep it inline with the theme without breaking radius/shadow. */
+.theme-dark input:-webkit-autofill,
+.theme-dark input:-webkit-autofill:hover,
+.theme-dark input:-webkit-autofill:focus,
+.theme-dark input:-webkit-autofill:active {
+  -webkit-text-fill-color: #e5e7eb;
+  -webkit-box-shadow: 0 0 0 1000px #172033 inset;
+  caret-color: #e5e7eb;
+  border-color: #334155;
+  border-radius: 8px;
+  transition: background-color 99999s ease-in-out 0s;
+}
+.theme-root:not(.theme-dark) input:-webkit-autofill,
+.theme-root:not(.theme-dark) input:-webkit-autofill:hover,
+.theme-root:not(.theme-dark) input:-webkit-autofill:focus,
+.theme-root:not(.theme-dark) input:-webkit-autofill:active {
+  -webkit-text-fill-color: #0f172a;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  caret-color: #0f172a;
+  border-color: #cbd5e1;
+  border-radius: 8px;
+  transition: background-color 99999s ease-in-out 0s;
+}
+
+/* Chromium applies autofill styling with UA !important; author !important wins.
+   School ID / email fields were showing a white fill in dark mode. */
+.theme-dark input:-webkit-autofill,
+.theme-dark input:-webkit-autofill:hover,
+.theme-dark input:-webkit-autofill:focus,
+.theme-dark input:-webkit-autofill:active {
+  -webkit-text-fill-color: #e5e7eb !important;
+  -webkit-box-shadow: 0 0 0 1000px #172033 inset !important;
+  caret-color: #e5e7eb !important;
+  border-color: #334155 !important;
+  background-color: #172033 !important;
+  transition: background-color 99999s ease-in-out 0s !important;
+}
+.theme-root:not(.theme-dark) input:-webkit-autofill,
+.theme-root:not(.theme-dark) input:-webkit-autofill:hover,
+.theme-root:not(.theme-dark) input:-webkit-autofill:focus,
+.theme-root:not(.theme-dark) input:-webkit-autofill:active {
+  -webkit-text-fill-color: #0f172a !important;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  caret-color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+  background-color: #ffffff !important;
+  transition: background-color 99999s ease-in-out 0s !important;
+}
+
+/* Cookie consent banner */
+.cookie-consent {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 80;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px 32px;
+  max-width: 1080px;
+  margin: 0 auto;
+  border: 1px solid rgba(148,163,184,.32);
+  border-radius: 18px;
+  background: rgba(255,255,255,.97);
+  box-shadow: 0 18px 48px rgba(15,23,42,.16);
+  padding: 20px 22px;
+  animation: rise .5s cubic-bezier(.2,.8,.2,1) both;
+}
+.cookie-consent-copy { min-width: 0; }
+.cookie-consent-copy strong { display: block; font-size: 15px; line-height: 1.4; color: #0f172a; margin-bottom: 6px; }
+.cookie-consent-copy p { margin: 0; max-width: 620px; color: #475569; font-size: 12.5px; line-height: 1.6; }
+.cookie-options { display: grid; gap: 8px; margin-top: 12px; }
+.cookie-options label { display: flex; align-items: center; gap: 8px; color: #0f172a; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+.cookie-options input { width: 15px; height: 15px; accent-color: #4f46e5; cursor: pointer; }
+.cookie-options small { color: #64748b; font-size: 11px; font-weight: 500; }
+.cookie-consent-actions { display: flex; flex-shrink: 0; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.cookie-btn { border-radius: 10px; padding: 10px 16px; font-size: 12.5px; font-weight: 800; cursor: pointer; transition: .2s; white-space: nowrap; }
+.cookie-btn-ghost { border: 1px solid rgba(148,163,184,.4); background: transparent; color: #334155; }
+.cookie-btn-ghost:hover { border-color: #6366f1; color: #4f46e5; }
+.cookie-btn-primary { border: 1px solid #4f46e5; background: #4f46e5; color: #fff; }
+.cookie-btn-primary:hover { background: #4338ca; transform: translateY(-1px); }
+.theme-dark .cookie-consent { border-color: #2b3850; background: rgba(17,27,45,.97); box-shadow: 0 18px 48px rgba(2,6,23,.5); }
+.theme-dark .cookie-consent-copy strong { color: #f1f5f9; }
+.theme-dark .cookie-consent-copy p { color: #94a3b8; }
+.theme-dark .cookie-options label { color: #e2e8f0; }
+.theme-dark .cookie-options small { color: #94a3b8; }
+.theme-dark .cookie-btn-ghost { border-color: #334155; color: #cbd5e1; }
+.theme-dark .cookie-btn-ghost:hover { border-color: #6366f1; color: #a5b4fc; }
+@media (max-width: 720px) {
+  .cookie-consent { flex-direction: column; gap: 14px; padding: 16px; }
+  .cookie-consent-actions { justify-content: stretch; width: 100%; }
+  .cookie-consent-actions .cookie-btn { flex: 1; }
+}

@@ -13,12 +13,12 @@ class AuthController extends Controller
     {
         $data = $request->validate([
             'name' => 'nullable|string|max:120',
-            'first_name' => 'nullable|string|max:60',
-            'last_name' => 'nullable|string|max:60',
-            'middle_name' => 'nullable|string|max:60',
-            'email' => 'required|email|unique:users,email',
-            'school_id' => 'required|string|max:64|unique:users,school_id',
-            'password' => ['required', 'confirmed', PasswordRule::min(8)->mixedCase()->numbers()->symbols()],
+            'first_name' => 'nullable|string|max:20|regex:/^[\\p{L}][\\p{L} ]*$/u',
+            'last_name' => 'nullable|string|max:20|regex:/^[\\p{L}][\\p{L} ]*$/u',
+            'middle_name' => 'nullable|string|max:20|regex:/^[\\p{L}][\\p{L} ]*$/u',
+            'email' => ['required', 'email', 'unique:users,email', 'regex:/^[A-Za-z]+(\\.[A-Za-z]+)*\\.up@phinmaed\\.com$/'],
+            'school_id' => ['required', 'string', 'max:15', 'unique:users,school_id', 'regex:/^\\d{2}-\\d{4}-\\d{4}$|^\\d{2}-\\d{2}-\\d{4}-\\d{4}$/'],
+            'password' => ['required', 'confirmed', 'max:25', PasswordRule::min(8)->mixedCase()->numbers()->symbols()],
             'role' => 'nullable|in:user',
         ]);
         $firstName = trim($data['first_name'] ?? '');

@@ -251,7 +251,9 @@ function AuthModal({
 }) {
   const [mode, setMode] = useState<AuthMode>(initialMode ?? "signin");
   const [authRole, setAuthRole] = useState<Role>(role === "admin" ? "user" : role);
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [middleName, setMiddleName] = useState("");
   const [email, setEmail] = useState(role === "admin" ? "admin@fixko.test" : "");
   const [schoolId, setSchoolId] = useState("");
   const [password, setPassword] = useState("");
@@ -306,17 +308,28 @@ function AuthModal({
         setSubmitting(false);
         return;
       }
-      const response =
-        mode === "signin"
-          ? await login(email, password)
-          : await signup({
-              name,
-              email,
-              school_id: schoolId,
-              password,
-              password_confirmation: passwordConfirmation,
-              role: "user",
-            });
+      if (mode === "signup") {
+        // Account creation must not enter the main system — require a separate sign-in.
+        await signup({
+          last_name: lastName,
+          first_name: firstName,
+          middle_name: middleName,
+          email,
+          school_id: schoolId,
+          password,
+          password_confirmation: passwordConfirmation,
+          role: "user",
+        });
+        setPassword("");
+        setPasswordConfirmation("");
+        setShowPassword(false);
+        setShowPasswordConfirmation(false);
+        setMode("signin");
+        setNotice("Account created. Please sign in with your school email to continue.");
+        setSubmitting(false);
+        return;
+      }
+      const response = await login(email, password);
       if (!response.token) throw new Error("No access token was returned.");
       window.localStorage.setItem("fixko-token", response.token);
       if (response.user) window.localStorage.setItem("fixko-user", JSON.stringify(response.user));
@@ -337,7 +350,7 @@ function AuthModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
-      <div className="card w-full max-w-md p-7">
+      <div className={`card w-full p-7 ${mode === "signup" ? "max-w-2xl" : "max-w-md"}`}>
         <div className="mb-6 flex items-start justify-between">
           <div>
             {mode === "signup" && (
@@ -384,48 +397,89 @@ function AuthModal({
         )}
         <div className="space-y-4">
           {mode === "signup" && (
+            <div className="grid gap-3 sm:grid-cols-3">
+              <label className="block text-sm font-bold">
+                Last name
+                <input
+                  value={lastName}
+                  onChange={(event) => setLastName(filterLettersOnly(event.target.value))}
+                  className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-3 outline-none focus:border-indigo-500"
+                  placeholder="Dela Cruz"
+                  pattern="[A-Za-z\u00C0-\u024F ]+"
+                  title="Letters only"
+                  maxLength={20}
+                  required
+                />
+              </label>
+              <label className="block text-sm font-bold">
+                First name
+                <input
+                  value={firstName}
+                  onChange={(event) => setFirstName(filterLettersOnly(event.target.value))}
+                  className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-3 outline-none focus:border-indigo-500"
+                  placeholder="Juan"
+                  pattern="[A-Za-z\u00C0-\u024F ]+"
+                  title="Letters only"
+                  maxLength={20}
+                  required
+                />
+              </label>
+              <label className="block text-sm font-bold">
+                Middle name
+                <input
+                  value={middleName}
+                  onChange={(event) => setMiddleName(filterLettersOnly(event.target.value))}
+                  className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-3 outline-none focus:border-indigo-500"
+                  placeholder="Santos"
+                  pattern="[A-Za-z\u00C0-\u024F ]+"
+                  title="Letters only"
+                  maxLength={20}
+                />
+              </label>
+            </div>
+          )}
+          <div className={`grid gap-3 ${mode === "signup" && role !== "admin" ? "sm:grid-cols-2" : ""}`}>
             <label className="block text-sm font-bold">
-              Full name
+              {role === "admin" ? "Admin username or email" : "School email"}
               <input
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-3"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                type="email"
+                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-3 outline-none focus:border-indigo-500"
+                placeholder={role === "admin" ? "admin.up@phinmaed.com" : "juan.delacruz.up@phinmaed.com"}
+                pattern={role === "admin" ? undefined : "[A-Za-z]+(\\.[A-Za-z]+)*\\.up@phinmaed\\.com"}
+                title="Use your PHINMA Education email, e.g. juan.delacruz.up@phinmaed.com"
                 required
               />
             </label>
-          )}
-          <label className="block text-sm font-bold">
-            {role === "admin" ? "Admin username or email" : "School email"}
-            <input
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              type="email"
-              className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-3 outline-none focus:border-indigo-500"
-              placeholder={role === "admin" ? "admin@school.edu.ph" : "you@school.edu.ph"}
-              required
-            />
-          </label>
-          {mode === "signup" && role !== "admin" && (
-            <label className="block text-sm font-bold">
-              School ID
-              <input
-                value={schoolId}
-                onChange={(event) => setSchoolId(event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-3"
-                placeholder="2026-00001"
-                required
-              />
-            </label>
-          )}
+            {mode === "signup" && role !== "admin" && (
+              <label className="block text-sm font-bold">
+                School ID
+                <input
+                  value={schoolId}
+                  onChange={(event) => setSchoolId(formatSchoolId(event.target.value))}
+                  inputMode="numeric"
+                  maxLength={15}
+                  pattern={SCHOOL_ID_PATTERN}
+                  title="Numbers and hyphens only — format: 03-1234-1234 or 03-01-1234-1234"
+                  className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-3 outline-none focus:border-indigo-500"
+                  placeholder="03-1234-1234"
+                  required
+                />
+              </label>
+            )}
+          </div>
           {mode !== "forgot" && (
+            <div className={`grid gap-3 ${(mode === "signup" || mode === "reset") ? "sm:grid-cols-2" : ""}`}>
             <label className="block text-sm font-bold">
               <span>Password</span>
               <div className="relative mt-2">
                 <input
                   value={password}
-                  onChange={(event) => setPassword(event.target.value)}
+                  onChange={(event) => setPassword(event.target.value.slice(0, 25))}
                   type={showPassword ? "text" : "password"}
                   minLength={8}
+                  maxLength={25}
                   className="w-full rounded-lg border border-slate-200 px-3 py-3 pr-11 outline-none focus:border-indigo-500"
                   placeholder="••••••••"
                   required
@@ -446,15 +500,15 @@ function AuthModal({
                 </p>
               )}
             </label>
-          )}
           {(mode === "signup" || mode === "reset") && (
             <label className="block text-sm font-bold">
               <span>Confirm password</span>
               <div className="relative mt-2">
                 <input
                   value={passwordConfirmation}
-                  onChange={(event) => setPasswordConfirmation(event.target.value)}
+                  onChange={(event) => setPasswordConfirmation(event.target.value.slice(0, 25))}
                   type={showPasswordConfirmation ? "text" : "password"}
+                  maxLength={25}
                   className="w-full rounded-lg border border-slate-200 px-3 py-3 pr-11 outline-none focus:border-indigo-500"
                   required
                 />
@@ -470,6 +524,8 @@ function AuthModal({
                 </button>
               </div>
             </label>
+            )}
+            </div>
           )}
           {notice && (
             <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">
@@ -524,7 +580,7 @@ function AuthModal({
 
 function Landing({ onAuth }: { onAuth: (role: Role, mode?: AuthMode) => void }) {
   const [step, setStep] = useState(0);
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeNav, setActiveNav] = useState("pulse");
   const statusBoardRef = useRef<HTMLDivElement>(null);
@@ -791,7 +847,7 @@ function Landing({ onAuth }: { onAuth: (role: Role, mode?: AuthMode) => void }) 
         </div>
       </div>
     </section></Reveal>
-    <Reveal><section className="faq-modern mx-auto max-w-6xl px-6 py-12 lg:px-10 lg:py-14" id="faq"><div className="mb-8 text-center"><span className="eyebrow">FAQ</span><h2 className="mt-4 text-3xl font-black sm:text-4xl">Good to know</h2><p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-500">Quick answers for users and the admins keeping campus moving.</p></div><div className="faq-grid">{["Who can sign up?","What do users need to sign up?","Why does the report form ask for my ID again?","Can I report anonymously?","What happens after I submit a report?","Can admins export the data?"].map((question, index) => <div className="faq-card" key={question}><button className="flex w-full items-center justify-between gap-4 p-4 text-left text-sm font-bold sm:p-5" onClick={() => setOpenFaq(openFaq === index ? null : index)}><span>{question}</span><span className={`faq-plus ${openFaq === index ? "open" : ""}`}>+</span></button><div className={`faq-answer ${openFaq === index ? "open" : ""}`}><p>{["Users sign up with their school email. Admin accounts are pre-built by the school.","Just your school email and School ID.","It is a verification step on every report. The field is pre-filled but remains editable.","No. Every report is tied to a verified account so admins can follow up.","It is checked for duplicates and moves through Pending, Review, In progress, and Resolved.","Yes — admins can export reports to CSV."][index]}</p></div></div>)}</div></section></Reveal>
+    <Reveal><section className="faq-modern mx-auto max-w-6xl px-6 py-12 lg:px-10 lg:py-14" id="faq"><div className="mb-8 text-center"><span className="eyebrow">FAQ</span><h2 className="mt-4 text-3xl font-black sm:text-4xl">Good to know</h2><p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-500">Quick answers for users and the admins keeping campus moving.</p></div><div className="faq-grid">{["Who can sign up?","What do users need to sign up?","Why does the report form ask for my ID again?","Can I report anonymously?","What happens after I submit a report?","Can admins export the data?"].map((question, index) => <div className="faq-card" key={question}><button className="flex w-full items-center justify-between gap-4 p-4 text-left text-sm font-bold sm:p-5" onClick={() => setOpenFaq(openFaq === index ? null : index)}><span>{question}</span><span className={`faq-plus ${openFaq === index ? "open" : ""}`}>+</span></button><div className={`faq-answer ${openFaq === index ? "open" : ""}`}><div className="faq-answer-inner"><p>{["Users sign up with their school email. Admin accounts are pre-built by the school.","Just your school email and School ID.","It is a verification step on every report. The field is pre-filled but remains editable.","No. Every report is tied to a verified account so admins can follow up.","It is checked for duplicates and moves through Pending, Review, In progress, and Resolved.","Yes — admins can export reports to CSV."][index]}</p></div></div></div>)}</div></section></Reveal>
     <section className="cta-band cta-wide mx-4 mb-12 mt-8 rounded-2xl px-6 py-8 text-white lg:mx-auto lg:max-w-[1700px] lg:px-14 lg:py-10">
       <div className="cta-orbit cta-orbit-one" />
       <div className="cta-orbit cta-orbit-two" />
@@ -3389,6 +3445,122 @@ function StudentDashboard({
   );
 }
 
+type CookieChoice = "all" | "custom" | "none";
+
+/** Letters and spaces only — for name fields (no digits or special characters). */
+const LETTERS_ONLY = /^[A-Za-z\u00C0-\u024F ]*$/;
+const filterLettersOnly = (value: string) => value.replace(/[^A-Za-z\u00C0-\u024F ]/g, "").replace(/^ +/, "");
+
+/** School ID mask: 03-1234-1234 (10 digits) or 03-01-1234-1234 (12 digits). Digits with auto hyphens. */
+const formatSchoolId = (value: string) => {
+  const digits = value.replace(/\D/g, "").slice(0, 12);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 2)}-${digits.slice(2)}`;
+  if (digits.length <= 10) return `${digits.slice(0, 2)}-${digits.slice(2, 6)}-${digits.slice(6)}`;
+  return `${digits.slice(0, 2)}-${digits.slice(2, 4)}-${digits.slice(4, 8)}-${digits.slice(8)}`;
+};
+const SCHOOL_ID_PATTERN = "^\\d{2}-\\d{4}-\\d{4}$|^\\d{2}-\\d{2}-\\d{4}-\\d{4}$";
+interface CookieConsentState {
+  choice: CookieChoice;
+  analytics: boolean;
+  preferences: boolean;
+}
+
+const COOKIE_CONSENT_KEY = "fixko-cookie-consent";
+
+function loadCookieConsent(): CookieConsentState | null {
+  try {
+    const raw = window.localStorage.getItem(COOKIE_CONSENT_KEY);
+    return raw ? (JSON.parse(raw) as CookieConsentState) : null;
+  } catch {
+    return null;
+  }
+}
+
+function CookieConsent() {
+  const [visible, setVisible] = useState(false);
+  const [customizing, setCustomizing] = useState(false);
+  const [analytics, setAnalytics] = useState(false);
+  const [preferences, setPreferences] = useState(false);
+
+  useEffect(() => {
+    if (!loadCookieConsent()) setVisible(true);
+  }, []);
+
+  const persist = (state: CookieConsentState) => {
+    window.localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(state));
+    setVisible(false);
+    setCustomizing(false);
+  };
+
+  if (!visible) return null;
+
+  return (
+    <div className="cookie-consent" role="dialog" aria-live="polite" aria-label="Privacy and cookies">
+      <div className="cookie-consent-copy">
+        <strong>We value your privacy</strong>
+        <p>
+          Fixko uses essential cookies to keep you signed in and keep reports secure. Optional cookies
+          help us improve the campus dashboard and remember your preferences. You choose which ones to
+          allow.
+        </p>
+        {customizing && (
+          <div className="cookie-options">
+            <label>
+              <input type="checkbox" checked readOnly /> Essential <small>Always on — sign-in and security</small>
+            </label>
+            <label>
+              <input type="checkbox" checked={analytics} onChange={(event) => setAnalytics(event.target.checked)} />{" "}
+              Analytics <small>Anonymous usage stats</small>
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={preferences}
+                onChange={(event) => setPreferences(event.target.checked)}
+              />{" "}
+              Preferences <small>Remember theme and form details</small>
+            </label>
+          </div>
+        )}
+      </div>
+      <div className="cookie-consent-actions">
+        {customizing ? (
+          <>
+            <button className="cookie-btn cookie-btn-ghost" onClick={() => setCustomizing(false)}>
+              Back
+            </button>
+            <button
+              className="cookie-btn cookie-btn-primary"
+              onClick={() => persist({ choice: "custom", analytics, preferences })}
+            >
+              Save my choices
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              className="cookie-btn cookie-btn-ghost"
+              onClick={() => persist({ choice: "none", analytics: false, preferences: false })}
+            >
+              Reject all
+            </button>
+            <button className="cookie-btn cookie-btn-ghost" onClick={() => setCustomizing(true)}>
+              Reject some
+            </button>
+            <button
+              className="cookie-btn cookie-btn-primary"
+              onClick={() => persist({ choice: "all", analytics: true, preferences: true })}
+            >
+              Accept all
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [role, setRole] = useState<Role | null>(null);
   const [authRole, setAuthRole] = useState<Role | null>(null);
@@ -3440,6 +3612,7 @@ export default function Home() {
         <div className="global-depth-glow global-depth-glow-two" />
       </div>
       <ThemeToggle dark={darkMode} setDark={setDarkMode} />
+      <CookieConsent />
       {signInLoading ? (
         <SignInLoader role={signInLoading} />
       ) : role ? (

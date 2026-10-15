@@ -86,8 +86,8 @@ class ReportWorkflowTest extends TestCase
     {
         $this->postJson('/api/auth/signup', [
             'name' => 'Unsupported Role',
-            'email' => 'unsupported@example.com',
-            'school_id' => 'USR-001',
+            'email' => 'unsupported.name.up@phinmaed.com',
+            'school_id' => '03-0001-0001',
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'role' => 'manager',
@@ -100,8 +100,8 @@ class ReportWorkflowTest extends TestCase
             'first_name' => 'Juan',
             'last_name' => 'Dela Cruz',
             'middle_name' => 'Santos',
-            'email' => 'juan@example.com',
-            'school_id' => 'USR-002',
+            'email' => 'juan.santos.up@phinmaed.com',
+            'school_id' => '03-01-0001-0002',
             'password' => 'Password123!',
             'password_confirmation' => 'Password123!',
         ]);
@@ -113,7 +113,7 @@ class ReportWorkflowTest extends TestCase
             ->assertJsonPath('user.name', 'Juan Santos Dela Cruz');
 
         $this->assertDatabaseHas('users', [
-            'email' => 'juan@example.com',
+            'email' => 'juan.santos.up@phinmaed.com',
             'first_name' => 'Juan',
             'last_name' => 'Dela Cruz',
             'middle_name' => 'Santos',
