@@ -963,11 +963,13 @@ body::before {
   animation: navOrbFloat 3.6s ease-in-out infinite;
 }
 .app-search-wrap {
-  position: absolute;
-  left: 50%;
+  position: relative;
+  flex: 1 1 280px;
+  min-width: 220px;
   z-index: 40;
   width: min(520px, 38vw);
-  transform: translateX(-50%);
+  max-width: 520px;
+  margin-left: auto;
 }
 .app-search {
   display: flex;
@@ -2079,7 +2081,7 @@ body::before {
 @media (max-width: 800px) {
   .report-summary-grid { grid-template-columns: 1fr; }
   .my-report-details-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .app-search-wrap { position: relative; left: auto; width: min(320px, 42vw); margin-left: auto; transform: none; }
+  .app-search-wrap { flex: 0 1 320px; min-width: 0; width: min(320px, 42vw); }
   .app-nav-links {
     position: absolute;
     top: 70px;
