@@ -1,24 +1,8 @@
-node_modules/
-.next/
-dist/
-build/
-*.tsbuildinfo
-vendor/
-backend/.phpunit.result.cache
-backend/storage/*
-!backend/storage/.gitignore
-backend/public/storage
-backend/bootstrap/cache/*
-!backend/bootstrap/cache/.gitignore
+# NOTE: per project owner's request, dependencies (.env, node_modules,
+# vendor, .next, storage uploads) are deliberately tracked/pushed, so they
+# are NOT ignored here. Exception: files above GitHub's 100 MB hard limit
+# are still excluded because GitHub will refuse the push otherwise:
+frontend/node_modules/@next/swc-win32-x64-msvc/next-swc.win32-x64-msvc.node
+frontend/node_modules/@next/.swc-win32-x64-msvc-smvwvCUV/next-swc.win32-x64-msvc.node
 
-.env
-.env.*
-!.env.example
-
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-.DS_Store
-Thumbs.db
+# Small native binaries are still tracked; only the oversized ones above are skipped.

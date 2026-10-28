@@ -1,0 +1,45 @@
+{
+  "name": "napi-postinstall",
+  "version": "0.3.7",
+  "type": "commonjs",
+  "description": "The `postinstall` script helper for handling native bindings in legacy `npm` versions",
+  "repository": "git+https://github.com/un-ts/napi-postinstall.git",
+  "author": "JounQin <admin@1stg.me> (https://www.1stG.me)",
+  "funding": "https://opencollective.com/napi-postinstall",
+  "license": "MIT",
+  "engines": {
+    "node": "^12.20.0 || ^14.18.0 || >=16.0.0"
+  },
+  "bin": {
+    "napi-patch": "./lib/patch.js",
+    "napi-postinstall": "./lib/cli.js"
+  },
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./fallback": {
+      "types": "./lib/fallback.d.ts",
+      "default": "./lib/fallback.js"
+    },
+    "./cli": {
+      "types": "./lib/cli.d.ts",
+      "default": "./lib/cli.js"
+    },
+    "./patch": {
+      "types": "./lib/patch.d.ts",
+      "default": "./lib/patch.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "!**/*.tsbuildinfo"
+  ],
+  "publishConfig": {
+    "provenance": true
+  }
+}
