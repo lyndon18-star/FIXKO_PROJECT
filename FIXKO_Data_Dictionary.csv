@@ -1,0 +1,109 @@
+Table,Field Name,Data Type,Description,Constraints
+users,id,BIGINT (integer),Unique user ID,Primary Key - Auto-increment
+users,name,VARCHAR (255),Full display name,Required
+users,first_name,VARCHAR (60),First name (optional split of name),Nullable
+users,last_name,VARCHAR (60),Last name (optional split of name),Nullable
+users,middle_name,VARCHAR (60),Middle name (optional split of name),Nullable
+users,email,VARCHAR (255),Login email - must be school email,Unique - Required
+users,school_id,VARCHAR (255),Student / staff school ID number,Unique - Required
+users,password,VARCHAR (255),Hashed password,Required (hashed)
+users,role,ENUM (user / maintenance / admin),Account role,Default: user
+users,department,VARCHAR (255),Department of the user,Nullable
+users,email_verified_at,TIMESTAMP,When email OTP was verified,Nullable
+users,account_status,VARCHAR (20),Account state: active / suspended / restricted,Default: active
+users,status_until,TIMESTAMP,When a suspension ends (end of ban),Nullable
+users,warnings_count,INT (unsigned),Counts how many warnings the user got,Default: 0
+users,address,VARCHAR (255),Home address of the user,Nullable
+users,gender,ENUM (male / female / other),Gender of the user,Nullable
+users,block_section,VARCHAR (120),Block or section of a student,Nullable
+users,deleted_at,TIMESTAMP,Soft delete - moves account to recycle bin,Nullable
+users,remember_token,VARCHAR (255),Keeps user logged in on one device,Nullable
+users,created_at,TIMESTAMP,Account creation date,Auto-generated
+users,updated_at,TIMESTAMP,Last time the account was edited,Auto-generated
+rooms,id,BIGINT (integer),Unique room ID,Primary Key - Auto-increment
+rooms,building,VARCHAR (255),Name of the campus building,Required
+rooms,floor,VARCHAR (255),Floor number of the room,Nullable
+rooms,name,VARCHAR (255),Room name or number,Required
+rooms,code,VARCHAR (255),Short room code used in QR codes,Unique - Nullable
+rooms,department,VARCHAR (255),Department owning the room,Nullable
+rooms,created_at,TIMESTAMP,Room creation date,Auto-generated
+rooms,updated_at,TIMESTAMP,Last time the room was edited,Auto-generated
+reports,id,BIGINT (integer),Unique report ID (ticket code FIX-XXXXX),Primary Key - Auto-increment
+reports,reporter_id,BIGINT (integer),User who submitted the report,Foreign Key: users.id - Required - Deletes with user
+reports,reporter_school_id_snapshot,VARCHAR (255),Copy of reporter's school ID number at report time,Required (copy)
+reports,reporter_email_snapshot,VARCHAR (255),Copy of reporter's email at report time,Required (copy)
+reports,room_id,BIGINT (integer),Room where the problem is,Foreign Key: rooms.id - Required
+reports,equipment_id,BIGINT (integer),Old field - equipment was removed so this stays empty,Nullable (no longer used)
+reports,category,VARCHAR (255),Problem category,Nullable
+reports,item_name,VARCHAR (255),Name of the item being reported,Nullable
+reports,condition,VARCHAR (255),Condition of the item when reported,Nullable
+reports,quantity,INT (unsigned),Number of items affected,Nullable
+reports,description,TEXT,Details of the problem,Required
+reports,priority,ENUM (low / medium / high / critical),How urgent the problem is,Default: medium
+reports,status,ENUM (pending / under_review / in_progress / under_maintenance / resolved),Progress of the report,Default: pending
+reports,is_flagged,TINYINT (boolean),Marked by admin for moderation,Default: false
+reports,flag_reason,VARCHAR (100),Reason why the report was flagged,Nullable
+reports,flag_note,TEXT,Extra note about the flag,Nullable
+reports,flagged_at,TIMESTAMP,When the report was flagged,Nullable
+reports,handled_by,BIGINT (integer),Maintenance worker assigned to fix it,Foreign Key: users.id - Nullable
+reports,photo_url,VARCHAR (255),Path of the uploaded photo,Nullable
+reports,resolved_at,TIMESTAMP,When the report was marked resolved,Nullable
+reports,deleted_at,TIMESTAMP,Soft delete - moves report to recycle bin,Nullable
+reports,deleted_reason,VARCHAR (30),Why the report was deleted,Nullable
+reports,created_at,TIMESTAMP,Report creation date,Auto-generated
+reports,updated_at,TIMESTAMP,Last time the report was edited,Auto-generated
+comments,id,BIGINT (integer),Unique comment ID,Primary Key - Auto-increment
+comments,report_id,BIGINT (integer),Report the comment belongs to,Foreign Key: reports.id - Required
+comments,author_id,BIGINT (integer),User who wrote the comment,Foreign Key: users.id - Required
+comments,message,TEXT,Comment text,Required
+comments,created_at,TIMESTAMP,Comment creation date,Auto-generated
+comments,updated_at,TIMESTAMP,Last time the comment was edited,Auto-generated
+ticket_status_histories,id,BIGINT (integer),Unique history entry ID,Primary Key - Auto-increment
+ticket_status_histories,report_id,BIGINT (integer),Report this history belongs to,Foreign Key: reports.id - Required
+ticket_status_histories,old_status,VARCHAR (255),Status before the change,Nullable
+ticket_status_histories,new_status,VARCHAR (255),Status after the change,Required
+ticket_status_histories,changed_by,BIGINT (integer),User who changed the status,Foreign Key: users.id - Required
+ticket_status_histories,changed_at,TIMESTAMP,When the status was changed,Auto-generated
+feedback,id,BIGINT (integer),Unique feedback ID,Primary Key - Auto-increment
+feedback,report_id,BIGINT (integer),Report being rated,Foreign Key: reports.id - Required - Unique (one per report)
+feedback,user_id,BIGINT (integer),User who gave the rating,Foreign Key: users.id - Required
+feedback,rating,TINYINT (1-5),Star rating for the fix,Required
+feedback,comment,TEXT,Extra written feedback,Nullable
+feedback,created_at,TIMESTAMP,Feedback creation date,Auto-generated
+feedback,updated_at,TIMESTAMP,Last time feedback was edited,Auto-generated
+notifications,id,BIGINT (integer),Unique notification ID,Primary Key - Auto-increment
+notifications,user_id,BIGINT (integer),User who receives the notification,Foreign Key: users.id - Required
+notifications,message,TEXT,Notification text,Required
+notifications,is_read,TINYINT (boolean),Read marker,Default: false
+notifications,archived_at,TIMESTAMP,Archive marker (hidden from list),Nullable
+notifications,related_report_id,BIGINT (integer),Report the notification is about,Foreign Key: reports.id - Nullable
+notifications,created_at,TIMESTAMP,Notification creation date,Auto-generated
+notifications,updated_at,TIMESTAMP,Last time the notification was edited,Auto-generated
+password_reset_tokens,email,VARCHAR (255),Email address asking for a reset,Primary Key
+password_reset_tokens,token,VARCHAR (255),One-time reset code sent by email,Required
+password_reset_tokens,created_at,TIMESTAMP,When the token was made - expires old ones,Nullable
+personal_access_tokens,id,BIGINT (integer),Unique token ID,Primary Key - Auto-increment
+personal_access_tokens,tokenable_type,VARCHAR (255),Type of account the token belongs to (users),Required
+personal_access_tokens,tokenable_id,BIGINT (integer),ID of the account the token belongs to,Required
+personal_access_tokens,name,VARCHAR (255),Name of the device or login session,Required
+personal_access_tokens,token,VARCHAR (64),The login token itself (hashed),Unique - Required
+personal_access_tokens,abilities,TEXT,What the token is allowed to do,Nullable
+personal_access_tokens,last_used_at,TIMESTAMP,When the token was last used,Nullable
+personal_access_tokens,expires_at,TIMESTAMP,When the token expires,Nullable
+personal_access_tokens,created_at,TIMESTAMP,Token creation date,Auto-generated
+personal_access_tokens,updated_at,TIMESTAMP,Last time the token was edited,Auto-generated
+cache,key,VARCHAR (255),Name of the stored cache item,Primary Key
+cache,value,MEDIUMTEXT,The cached data,Required
+cache,expiration,INT,Cached data expires (fails) at this date,Required
+cache_locks,key,VARCHAR (255),Name of the lock,Primary Key
+cache_locks,owner,VARCHAR (255),Which process holds the lock,Required
+cache_locks,expiration,INT,When the lock expires,Required
+sessions,id,VARCHAR (255),Unique session ID,Primary Key
+sessions,user_id,BIGINT (integer),Logged-in user of this session,Foreign Key: users.id - Nullable
+sessions,ip_address,VARCHAR (45),IP address of the device,Nullable
+sessions,user_agent,TEXT,Browser and device info,Nullable
+sessions,payload,TEXT,Stored session data,Required
+sessions,last_activity,INT,Last time the user was active,Required
+migrations,id,INT (integer),Unique row ID,Primary Key - Auto-increment
+migrations,migration,VARCHAR (255),Name of the applied migration file,Required
+migrations,batch,INT,Which setup run (batch) applied it,Required

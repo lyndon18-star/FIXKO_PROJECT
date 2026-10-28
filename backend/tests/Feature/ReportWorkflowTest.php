@@ -52,10 +52,11 @@ class ReportWorkflowTest extends TestCase
             ->assertJsonCount(1, 'data');
     }
 
-    public function test_admin_can_see_and_update_a_report(): void
+    public function test_admin_can_see_a_report_and_maintenance_updates_status(): void
     {
         $user = User::factory()->create();
         $admin = User::factory()->create(['role' => 'admin']);
+        $personnel = User::factory()->create(['role' => 'maintenance']);
         $room = Room::factory()->create();
 
         $report = $this->actingAs($user, 'sanctum')->postJson('/api/reports', [
@@ -69,16 +70,28 @@ class ReportWorkflowTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data');
 
+        // The admin can only assign — changing the status is maintenance-only.
         $this->actingAs($admin, 'sanctum')
+            ->patchJson("/api/reports/{$report['id']}/status", ['status' => 'resolved'])
+            ->assertForbidden();
+
+        $this->actingAs($admin, 'sanctum')
+            ->patchJson("/api/reports/{$report['id']}", ['handled_by' => $personnel->id])
+            ->assertOk()
+            ->assertJsonPath('handled_by', $personnel->id);
+
+        // Only the assigned maintenance personnel can set the status.
+        $this->actingAs($personnel, 'sanctum')
             ->patchJson("/api/reports/{$report['id']}/status", ['status' => 'resolved'])
             ->assertOk()
             ->assertJsonPath('status', 'resolved')
-            ->assertJsonStructure(['room', 'reporter']);
+            ->assertJsonPath('handled_by', $personnel->id)
+            ->assertJsonStructure(['room', 'reporter', 'handler']);
 
         $this->assertDatabaseHas('ticket_status_histories', [
             'report_id' => $report['id'],
             'new_status' => 'resolved',
-            'changed_by' => $admin->id,
+            'changed_by' => $personnel->id,
         ]);
     }
 

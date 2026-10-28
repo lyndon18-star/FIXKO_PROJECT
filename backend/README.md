@@ -7,7 +7,8 @@ Install PHP 8.1+ and Composer before running it.
 
 Start **Apache** and **MySQL** in the XAMPP Control Panel, then create an
 empty database named `fixko` in phpMyAdmin. Alternatively, import
-`database/sql/fixko_schema.sql` from phpMyAdmin. The default XAMPP MySQL
+`database/sql/fixko_schema.sql` from phpMyAdmin for the current schema and
+campus room inventory. The default XAMPP MySQL
 credentials are `root` with an empty password; change the values in `.env` if
 your installation uses a password.
 
@@ -37,8 +38,9 @@ cookie-based Sanctum authentication. API token authentication uses
 ## Database design
 
 The migrations in `database/migrations` are the main reference for database
-changes. A readable table-by-table schema and relationship map are in
-`docs/database-schema.md`. Run
+changes. The manual SQL import is kept in sync with the final migration
+structure and includes the campus room inventory. A readable table-by-table
+schema and relationship map are in `docs/database-schema.md`. Run
 `php artisan migrate:fresh --seed` only when you intentionally want to drop
 and recreate all application data.
 
@@ -58,7 +60,7 @@ and recreate all application data.
 - `POST /reports/{report}/comments`
 - `POST /reports/{report}/feedback`
 - `GET /rooms`, `GET /rooms/{room}`, `GET /rooms/{room}/qr`
-- `GET|POST|GET|PUT /equipment`
+- `GET|POST|PUT|PATCH /equipment`
 - `GET|POST /equipment/{equipment}/repair-history`
 - `GET /analytics/summary` — admin-only dashboard aggregates
 - `GET /notifications`, `PATCH /notifications/{notification}/read`
@@ -113,6 +115,3 @@ network, and server errors.
   password reset table.
 - Controllers apply request validation and user/admin ownership authorization.
 - `EnsureRole` is available as the `role` middleware alias.
-
-PHP and Composer are not installed in the current development environment, so
-runtime migrations and HTTP tests must be run after installing them.

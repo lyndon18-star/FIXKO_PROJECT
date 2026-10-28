@@ -1,16 +1,26 @@
 import * as React from "react";
 
-export type Role = "user" | "admin";
-export type AuthMode = "signin" | "signup" | "forgot" | "reset";
-export type Status = "pending" | "review" | "progress" | "resolved";
+// This file holds small shared UI pieces used across the app:
+// the Icon and logo components, the number count-up and progress-bar effects,
+// and a nicer-looking dropdown (ModernSelect).
 
+// The three kinds of accounts that can sign in.
+export type Role = "user" | "admin" | "maintenance";
+// Which screen of the auth flow is showing (sign in / sign up / etc.).
+export type AuthMode = "signin" | "signup" | "forgot" | "reset";
+// The short status codes a report can have.
+export type Status = "pending" | "review" | "progress" | "resolved" | "maint";
+
+// Maps each short status code to the words people actually read on screen.
 export const statusLabel: Record<Status, string> = {
   pending: "Pending",
   review: "Under review",
   progress: "In progress",
   resolved: "Resolved",
+  maint: "Maintenance",
 };
 
+// The names of every icon the app can draw (used with the Icon component below).
 export type IconName =
   | "spark"
   | "clipboard"
@@ -33,8 +43,15 @@ export type IconName =
   | "edit"
   | "logout"
   | "eye"
-  | "eyeOff";
+  | "eyeOff"
+  | "close"
+  | "lock"
+  | "trash"
+  | "archive"
+  | "message";
 
+// Draws one small line-art SVG icon by name (e.g. <Icon name="bell" />).
+// All the icon shapes are listed in the paths object below.
 export function Icon({
   name,
   size = 18,
@@ -162,6 +179,30 @@ export function Icon({
         <path d="M9.9 5.4A10.5 10.5 0 0 1 12 5c6.5 0 10 7 10 7a17.3 17.3 0 0 1-4.7 6.2M7.1 7.1A16.6 16.6 0 0 0 2 12s3.5 7 10 7a10.3 10.3 0 0 0 5.4-1.6" />
       </>
     ),
+    close: <path d="M6 6l12 12M18 6 6 18" />,
+    lock: (
+      <>
+        <rect x="4" y="10" width="16" height="11" rx="2" />
+        <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" />
+      </>
+    ),
+    trash: (
+      <>
+        <path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13M10 11v6M14 11v6" />
+      </>
+    ),
+    archive: (
+      <>
+        <rect x="3" y="4" width="18" height="5" rx="1" />
+        <path d="M5 9v10h14V9M9 13h6" />
+      </>
+    ),
+    message: (
+      <>
+        <path d="M4 5h16v11H8l-4 4V5Z" />
+        <path d="M8 9h8M8 12.5h5" />
+      </>
+    ),
   };
 
   return (
@@ -181,6 +222,7 @@ export function Icon({
   );
 }
 
+// Shows the Fixko logo image at the given size.
 export function BrandMark({ size = 34 }: { size?: number }) {
   return (
     <img
@@ -194,6 +236,8 @@ export function BrandMark({ size = 34 }: { size?: number }) {
   );
 }
 
+// A number that counts up from 0 to its final value when it scrolls into view
+// (used for the dashboard statistics).
 export function CountUp({ value }: { value: number }) {
   const [count, setCount] = React.useState(0);
   const ref = React.useRef<HTMLSpanElement>(null);
@@ -222,6 +266,8 @@ export function CountUp({ value }: { value: number }) {
   return <span ref={ref}>{count}</span>;
 }
 
+// A progress bar that only fills up once it scrolls into view (nicer than showing
+// it already full). The fill color is set with the `fill` class.
 export function LiveProgress({ value, fill }: { value: number; fill: string }) {
   const [active, setActive] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
@@ -252,6 +298,8 @@ export function LiveProgress({ value, fill }: { value: number; fill: string }) {
   );
 }
 
+// Marks a section so the scroll animations (run by GSAP elsewhere) can find it
+// and fade/slide it in when it appears on screen.
 export function Reveal({
   children,
   className = "",
@@ -262,6 +310,7 @@ export function Reveal({
   return <div className={`gsap-reveal ${className}`}>{children}</div>;
 }
 
+// The small colored pill next to a report (e.g. "high" priority or "Pending" status).
 export function Badge({
   value,
   type = "priority",
@@ -276,6 +325,8 @@ export function Badge({
   );
 }
 
+// A custom dropdown that looks better than the browser's default <select>.
+// Opens a menu of options, lets you pick one, and closes when you click elsewhere.
 export function ModernSelect({
   value,
   onChange,
@@ -292,38 +343,72 @@ export function ModernSelect({
   className?: string;
 }) {
   const [open, setOpen] = React.useState(false);
+  const [menuDark, setMenuDark] = React.useState(false);
+  const [flip, setFlip] = React.useState(false);
   const selectRef = React.useRef<HTMLDivElement>(null);
+  const menuRef = React.useRef<HTMLDivElement>(null);
   const selected = options.find((option) => option.value === value);
+  const openMenu = () => {
+    // Under CSS zoom the menu stays inside the wrapper, outside .theme-dark,
+    // so read the theme flag from <html data-theme> instead.
+    setMenuDark(document.documentElement.dataset.theme === "dark");
+    // flip above the trigger only when there is no room below AND more room above;
+    // otherwise stay below and let the page scroll (e.g. mid-page toolbars)
+    const rect = selectRef.current?.getBoundingClientRect();
+    const estimatedHeight = Math.min(options.length * 38 + 14, 250);
+    const spaceBelow = rect ? window.innerHeight - rect.bottom : 9999;
+    const spaceAbove = rect ? rect.top : 9999;
+    setFlip(Boolean(rect) && spaceBelow < estimatedHeight + 12 && spaceAbove > spaceBelow);
+    setOpen(true);
+  };
 
   React.useEffect(() => {
-    const close = (event: MouseEvent) => {
-      if (selectRef.current && !selectRef.current.contains(event.target as Node))
+    if (!open) return;
+    // hide the floating theme widget while a menu is open, so it never overlaps
+    document.body.classList.add("select-open");
+    const close = (event: Event) => {
+      if (
+        selectRef.current &&
+        !selectRef.current.contains(event.target as Node) &&
+        !menuRef.current?.contains(event.target as Node)
+      )
         setOpen(false);
     };
     document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, []);
+    document.addEventListener("pointerdown", close);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("pointerdown", close);
+      document.body.classList.remove("select-open");
+    };
+  }, [open]);
 
   return (
     <div
       ref={selectRef}
-      className={`modern-select ${open ? "is-open" : ""} ${disabled ? "is-disabled" : ""} ${className}`}
+      className={`modern-select ${open ? "is-open" : ""} ${flip ? "is-flip" : ""} ${disabled ? "is-disabled" : ""} ${className}`}
     >
+      {/* The dropdown trigger button showing the selected value (or the placeholder). */}
       <button
         type="button"
         className="modern-select-trigger"
         aria-haspopup="listbox"
         aria-expanded={open}
         disabled={disabled}
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => (open ? setOpen(false) : openMenu())}
       >
         <span className={selected ? "" : "is-placeholder"}>
           {selected?.label ?? placeholder}
         </span>
         <span className="modern-select-chevron" />
       </button>
+      {/* The list of options shown while the dropdown is open. */}
       {open && (
-        <div className="modern-select-menu" role="listbox">
+        <div
+          ref={menuRef}
+          className={`modern-select-menu ${menuDark ? "is-dark" : ""}`}
+          role="listbox"
+        >
           {options.map((option) => (
             <button
               type="button"

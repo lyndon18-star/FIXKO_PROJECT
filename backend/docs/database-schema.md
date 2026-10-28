@@ -26,6 +26,9 @@ erDiagram
     USERS {
         bigint id PK
         varchar name
+        varchar first_name
+        varchar last_name
+        varchar middle_name
         varchar email UK
         varchar school_id UK
         varchar password
@@ -191,7 +194,7 @@ For standard numbered floors, the room range is based on the floor number:
 - Floor 7: `700`-`799`
 - Floor 8: special River Side inventory listed above
 
-The exact boundary rooms (`Room 100`, `Room 200`, `Room 300`, and so on) are included by migration `2026_09_23_000013_add_floor_boundary_rooms`. The main room inventory is seeded by migration `2026_09_23_000012_seed_campus_room_layout`.
+The exact boundary rooms (`Room 100`, `Room 200`, `Room 300`, and so on) are included by migration `2026_09_23_000013_add_floor_boundary_rooms`. The main room inventory is seeded by migration `2026_09_23_000012_seed_campus_room_layout`. Migration `2026_09_18_000007_add_missing_campus_buildings` also inserts a `Main Room` fallback for CMA, PTC, Basic Ed, CHS, North Hall, and the Gym.
 
 ## Key constraints
 
@@ -217,6 +220,10 @@ These tables exist in the database but are omitted from the domain ERD:
 
 They are framework infrastructure and do not represent Fixko business entities.
 
+The SQL import also inserts the campus room inventory, matching migrations
+`000007`, `000012`, and `000013`. It does not create the admin account or extra
+factory rooms produced by `php artisan migrate --seed`.
+
 ## Applying the schema
 
 ### Recommended: Laravel migrations
@@ -234,6 +241,4 @@ This creates or updates the database schema and applies the campus room migratio
 
 ### Manual phpMyAdmin import
 
-`backend\database\sql\fixko_schema.sql` contains the table structure for manual MySQL/phpMyAdmin setup, including `reports.photo_url` and the comments/report relationships. It does not contain the large campus room inventory because that inventory is maintained by Laravel migrations.
-
-For a complete schema including the seeded room layout, use the Laravel migration path above. Importing the SQL file alone creates the tables but does not create the canonical campus rooms. Do not run the SQL file against a database that already contains the same tables unless the database is intentionally being recreated; the SQL file drops and recreates application tables.
+`backend\database\sql\fixko_schema.sql` contains the current table structure and campus room inventory for manual MySQL/phpMyAdmin setup, including separated user-name fields, `reports.photo_url`, and the current report relationships. It drops and recreates the application tables, so import it only when the database is intentionally being recreated.

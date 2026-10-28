@@ -1,0 +1,213 @@
+%% ================================================================
+%% FIXKO Database - FINALIZED Schema (Mermaid ERD)
+%% Database: fixko (MySQL) - 13 tables
+%% Matches FIXKO_Data_Dictionary.pdf exactly
+%%
+%% NOTE: reports.equipment_id is a LEGACY column from a removed
+%% feature. It is kept in the database but no longer used - it has
+%% NO relationship lines and stays empty.
+%%
+%% System tables (cache, cache_locks, migrations) are standalone -
+%% the Laravel framework owns them, no FIXKO relationships.
+%% ================================================================
+
+erDiagram
+
+    %% ---------------- Core / business tables ----------------
+
+    users {
+        bigint id PK
+        varchar(255) name "Full display name"
+        varchar(60) first_name "Optional split of name"
+        varchar(60) last_name "Optional split of name"
+        varchar(60) middle_name "Optional split of name"
+        varchar(255) email UK "Login email - must be school email"
+        varchar(255) school_id UK "Student or staff school ID"
+        varchar(255) password "Hashed password"
+        enum role "user - maintenance - admin"
+        varchar(255) department "Optional"
+        timestamp email_verified_at "When email OTP was verified"
+        varchar(20) account_status "active - suspended - restricted"
+        timestamp status_until "When a suspension ends"
+        int warnings_count "Count of formal warnings"
+        varchar(255) address "Optional"
+        enum gender "male - female - other"
+        varchar(120) block_section "Optional"
+        timestamp deleted_at "Soft delete - recycle bin"
+        varchar(255) remember_token "Stay logged in on one device"
+        timestamp created_at "Auto-generated"
+        timestamp updated_at "Auto-generated"
+    }
+
+    rooms {
+        bigint id PK
+        varchar(255) building "Name of campus building"
+        varchar(255) floor "Floor number"
+        varchar(255) name "Room name or number"
+        varchar(255) code UK "Short room code used in QR codes"
+        varchar(255) department "Department owning the room"
+        timestamp created_at "Auto-generated"
+        timestamp updated_at "Auto-generated"
+    }
+
+    reports {
+        bigint id PK "Ticket code FIX-XXXXX"
+        bigint reporter_id FK "User who submitted the report"
+        varchar(255) reporter_school_id_snapshot "Copy of reporter school ID at report time"
+        varchar(255) reporter_email_snapshot "Copy of reporter email at report time"
+        bigint room_id FK "Room where the problem is"
+        bigint equipment_id "LEGACY column - no longer used"
+        varchar(255) category "Problem category"
+        varchar(255) item_name "Name of item being reported"
+        varchar(255) condition "Condition of the item when reported"
+        int quantity "Number of items affected"
+        text description "Details of the problem"
+        enum priority "low - medium - high - critical"
+        enum status "pending - under_review - in_progress - under_maintenance - resolved"
+        tinyint is_flagged "Marked by admin for moderation"
+        varchar(100) flag_reason "Reason the report was flagged"
+        text flag_note "Extra note about the flag"
+        timestamp flagged_at "When the report was flagged"
+        bigint handled_by FK "Maintenance worker assigned to fix it"
+        varchar(255) photo_url "Path of uploaded photo"
+        timestamp resolved_at "When the report was marked resolved"
+        timestamp deleted_at "Soft delete - recycle bin"
+        varchar(30) deleted_reason "Why the report was deleted"
+        timestamp created_at "Auto-generated"
+        timestamp updated_at "Auto-generated"
+    }
+
+    comments {
+        bigint id PK
+        bigint report_id FK "Report the comment belongs to"
+        bigint author_id FK "User who wrote the comment"
+        text message "Comment text"
+        timestamp created_at "Auto-generated"
+        timestamp updated_at "Auto-generated"
+    }
+
+    ticket_status_histories {
+        bigint id PK
+        bigint report_id FK "Report this history belongs to"
+        varchar(255) old_status "Status before the change"
+        varchar(255) new_status "Status after the change"
+        bigint changed_by FK "User who changed the status"
+        timestamp changed_at "When the status was changed"
+    }
+
+    feedback {
+        bigint id PK
+        bigint report_id FK "Report being rated - unique - one per report"
+        bigint user_id FK "User who gave the rating"
+        tinyint rating "Star rating 1 to 5"
+        text comment "Extra written feedback"
+        timestamp created_at "Auto-generated"
+        timestamp updated_at "Auto-generated"
+    }
+
+    notifications {
+        bigint id PK
+        bigint user_id FK "User who receives the notification"
+        text message "Notification text"
+        tinyint is_read "Read marker"
+        timestamp archived_at "Archive marker - hidden from list"
+        bigint related_report_id FK "Report the notification is about"
+        timestamp created_at "Auto-generated"
+        timestamp updated_at "Auto-generated"
+    }
+
+    %% -------------- Authentication / Laravel tables --------------
+
+    password_reset_tokens {
+        varchar(255) email PK "Email address asking for a reset"
+        varchar(255) token "One-time reset code sent by email"
+        timestamp created_at "When the token was made - expires old ones"
+    }
+
+    personal_access_tokens {
+        bigint id PK
+        varchar(255) tokenable_type "Type of account the token belongs to - users"
+        bigint tokenable_id "ID of the account the token belongs to"
+        varchar(255) name "Name of the device or login session"
+        varchar(64) token UK "The login token itself - hashed"
+        text abilities "What the token is allowed to do"
+        timestamp last_used_at "When the token was last used"
+        timestamp expires_at "When the token expires"
+        timestamp created_at "Auto-generated"
+        timestamp updated_at "Auto-generated"
+    }
+
+    sessions {
+        varchar(255) id PK "Unique session ID"
+        bigint user_id FK "Logged-in user of this session"
+        varchar(45) ip_address "IP address of the device"
+        text user_agent "Browser and device info"
+        text payload "Stored session data"
+        int last_activity "Last time the user was active"
+    }
+
+    %% ----------------- Framework-only tables ----------------------
+
+    cache {
+        varchar(255) key PK "Name of the stored cache item"
+        mediumtext value "The cached data"
+        int expiration "Cached data expires at this date"
+    }
+
+    cache_locks {
+        varchar(255) key PK "Name of the lock"
+        varchar(255) owner "Which process holds the lock"
+        int expiration "When the lock expires"
+    }
+
+    migrations {
+        int id PK
+        varchar(255) migration "Name of the applied migration file"
+        int batch "Which setup run applied it"
+    }
+
+    %% ---------------------- Relationships -------------------------
+
+    %% A user submits zero or many reports
+    users ||--o{ reports : "submits"
+
+    %% A room hosts zero or many reports
+    rooms ||--o{ reports : "located in"
+
+    %% A report may have zero or one maintenance worker assigned
+    users |o--o{ reports : "assigned to"
+
+    %% A report has many comments - comments are deleted with the report
+    reports ||--o{ comments : "has comments"
+
+    %% A user writes many comments
+    users ||--o{ comments : "writes"
+
+    %% A report has many status changes - its audit trail
+    reports ||--o{ ticket_status_histories : "status audit trail"
+
+    %% A user can change statuses of many reports
+    users ||--o{ ticket_status_histories : "changes status of"
+
+    %% A report has at most one feedback - unique - one per report
+    reports ||--o| feedback : "is rated by"
+
+    %% A user gives feedback on resolved reports
+    users ||--o{ feedback : "gives"
+
+    %% A user receives many notifications
+    users ||--o{ notifications : "receives"
+
+    %% A report may be mentioned in many notifications - nullable
+    reports |o--o{ notifications : "mentioned in"
+
+    %% Login tokens - Sanctum uses a polymorphic link (tokenable_type + tokenable_id)
+    users ||--o{ personal_access_tokens : "owns login token"
+
+    %% Password reset tokens are matched by email - no FK column
+    users ||--o{ password_reset_tokens : "matched by email"
+
+    %% Sessions remember which user is logged in - nullable
+    users |o--o{ sessions : "has web session"
+
+    %% cache - cache_locks - migrations are framework-only - no relationships

@@ -2,8 +2,13 @@
 namespace App\Http\Controllers;
 use App\Models\Report;
 use Illuminate\Support\Facades\DB;
+/**
+ * AnalyticsController — the admin dashboard charts: counts reports by status,
+ * priority, and building, shows the most-reported items, and how long fixes take.
+ */
 class AnalyticsController extends Controller
 {
+    /** GET /analytics/summary — admin-only stats: report counts, average resolution time in hours, and top reported items. */
     public function summary() {
         abort_unless(request()->user()->role === 'admin',403);
         $resolved = Report::whereNotNull('resolved_at')->get(['created_at','resolved_at']);
