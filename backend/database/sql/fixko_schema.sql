@@ -41,7 +41,9 @@ CREATE TABLE `users` (
   `updated_at` TIMESTAMP NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `users_email_unique` (`email`),
-  UNIQUE KEY `users_school_id_unique` (`school_id`)
+  UNIQUE KEY `users_school_id_unique` (`school_id`),
+  CONSTRAINT `users_school_email_format_check`
+    CHECK (`role` = 'admin' OR `email` REGEXP '^[A-Za-z]+(\\.[A-Za-z]+)+@phinmaed\\.com$')
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `rooms` (
